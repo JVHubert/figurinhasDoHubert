@@ -5,6 +5,8 @@ name: APK
 on:
   push:
     branches: [main]
+    # Mudanças só na página pública (docs/) ou no README não geram APK novo.
+    paths-ignore: ['docs/**', 'README.md']
   workflow_dispatch:
 
 permissions:

@@ -23,6 +23,8 @@
     font-size: 19px; text-decoration: none; padding: 18px; border-radius: 14px; }
   .bt:focus-visible { outline: 3px solid var(--texto); outline-offset: 3px; }
   .pequeno { color: var(--texto2); font-size: 15px; margin-top: 10px; }
+  .video { display: block; width: min(100%, 340px); aspect-ratio: 9 / 16; margin: 0 auto 28px; border-radius: 22px;
+    background: var(--sup); box-shadow: 0 24px 60px rgba(0,0,0,.5); }
   section { margin-top: 48px; }
   ol { margin: 0; padding: 0; list-style: none; counter-reset: passo; }
   ol li { counter-increment: passo; position: relative; padding: 0 0 16px 44px; }
@@ -40,6 +42,9 @@
 <main>
   <h1>Figurinhas de WhatsApp sem borda branca, em 4 toques</h1>
   <p class="sub">App gratuito para Android, feito pelo Hubert. Escolha uma foto, um GIF ou um vídeo, ajuste o quadro e mande direto para o WhatsApp.</p>
+
+  <video class="video" src="comercial.mp4" poster="comercial.jpg" autoplay muted loop playsinline controls preload="metadata"
+    aria-label="Comercial de 30 segundos mostrando o app"></video>
 
   <a class="bt" href="https://github.com/JVHubert/figurinhasDoHubert/releases/download/ultima/figurinhas.apk">Baixar o app para Android</a>
   <p class="pequeno">Arquivo de uns 20 MB. Grátis, sem anúncio, sem conta e open source.</p>
