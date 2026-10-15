@@ -4,21 +4,30 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 
-/** Assinatura do JV nos pacotes e dentro de cada figurinha (quem recebe vê ao tocar nela). */
+/** Assinatura do Hubert (JV) nos pacotes e dentro de cada figurinha (quem recebe vê ao tocar nela). */
 object Creditos {
-    const val AUTOR = "JV"
+    const val AUTOR = "Hubert"
     const val LINK_CURTO = "tinyurl.com/figsjv"
     const val SITE = "https://jvhubert.github.io/figurinhas/"
     const val PUBLICADOR = "$AUTOR · faça as suas: $LINK_CURTO"
 
     fun nomeDoPacote(animado: Boolean, n: Int) =
-        (if (animado) "Animadas do $AUTOR" else "Figurinhas do $AUTOR") + if (n > 1) " $n" else ""
+        (if (animado) "Gifs do $AUTOR" else "Figurinhas do $AUTOR") + if (n > 1) " $n" else ""
 
     /**
      * Grava no WebP o bloco EXIF que o WhatsApp lê (nome do pacote e autor), no mesmo formato
      * usado pelas figurinhas que circulam no WhatsApp: TIFF com a etiqueta 0x5741 contendo um JSON.
      */
-    fun comExif(webp: ByteArray, idPacote: String, nomePacote: String, emoji: String): ByteArray {
+    fun comExif(webp: ByteArray, idPacote: String, nomePacote: String, emoji: String): ByteArray =
+        trocarExif(webp, exif(idPacote, nomePacote, emoji))
+
+    /** true se a figurinha já tem exatamente a assinatura atual (nome do pacote e autor de agora). */
+    fun assinaturaEmDia(webp: ByteArray, idPacote: String, nomePacote: String, emoji: String): Boolean {
+        val atual = lerChunks(webp).firstOrNull { it.first == "EXIF" }?.second ?: return false
+        return atual.contentEquals(exif(idPacote, nomePacote, emoji))
+    }
+
+    private fun exif(idPacote: String, nomePacote: String, emoji: String): ByteArray {
         val json = JSONObject()
             .put("sticker-pack-id", "${BuildConfig.AUTORIDADE}.$idPacote")
             .put("sticker-pack-name", nomePacote)
@@ -33,10 +42,8 @@ object Creditos {
             0x16, 0x00, 0x00, 0x00, // o JSON começa no byte 22
         )
         escrever32(cab, 14, json.size)
-        return trocarExif(webp, cab + json)
+        return cab + json
     }
-
-    fun temExif(webp: ByteArray) = lerChunks(webp).any { it.first == "EXIF" }
 
     private fun trocarExif(webp: ByteArray, exif: ByteArray): ByteArray {
         val chunks = lerChunks(webp).filter { it.first != "EXIF" }.toMutableList()

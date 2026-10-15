@@ -127,7 +127,7 @@ object Pacotes {
     }
 
     /**
-     * Figurinhas feitas antes da assinatura do JV: grava o nome do pacote e o autor dentro delas.
+     * Figurinhas sem assinatura (ou com nome antigo de pacote): grava o nome do pacote e o autor atuais.
      * Sobe a versão para o WhatsApp oferecer "Atualizar" (e trocar o nome antigo do pacote).
      */
     fun assinarAntigas(ctx: Context) = synchronized(trava) {
@@ -139,7 +139,7 @@ object Pacotes {
                 val arquivo = File(File(pasta(ctx), p.id), nome)
                 if (!arquivo.exists()) continue
                 val bytes = arquivo.readBytes()
-                if (Creditos.temExif(bytes)) continue
+                if (Creditos.assinaturaEmDia(bytes, p.id, p.nome, p.emoji)) continue
                 arquivo.writeBytes(Creditos.comExif(bytes, p.id, p.nome, p.emoji))
                 mudouPacote = true
             }
