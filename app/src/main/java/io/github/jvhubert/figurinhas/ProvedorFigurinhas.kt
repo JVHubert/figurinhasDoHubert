@@ -47,7 +47,7 @@ class ProvedorFigurinhas : ContentProvider() {
         lista.forEach { p ->
             addRow(
                 arrayOf<Any>(
-                    p.id, p.nome, "JV", p.bandeja(), "", "", "", "", "", "",
+                    p.id, p.nome, Creditos.PUBLICADOR, p.bandeja(), "", "", "", Creditos.SITE, "", "",
                     p.versao.toString(), 0, if (p.animado) 1 else 0,
                 )
             )
@@ -58,7 +58,7 @@ class ProvedorFigurinhas : ContentProvider() {
         arrayOf("sticker_file_name", "sticker_emoji", "sticker_accessibility_text")
     ).apply {
         // O WhatsApp exige pelo menos 1 emoji por figurinha.
-        p?.listaParaWhatsApp()?.forEach { addRow(arrayOf<Any?>(it, if (p.animado) "😂" else "🙂", null)) }
+        p?.listaParaWhatsApp()?.forEach { addRow(arrayOf<Any?>(it, p.emoji, null)) }
     }
 
     override fun openAssetFile(uri: Uri, mode: String): AssetFileDescriptor? {

@@ -31,7 +31,6 @@ class Ponte(private val a: MainActivity) {
         JSONObject().put("ok", true).put("pacote", p.id).put("nome", p.nome)
             .put("total", p.figurinhas.size)
             .put("temWhatsApp", WhatsApp.algumInstalado(a))
-            .put("noWhatsApp", WhatsApp.adicionado(a, p.id))
             .toString()
     } catch (e: Exception) {
         JSONObject().put("ok", false).put("erro", e.message ?: "Não consegui salvar a figurinha.").toString()
@@ -51,6 +50,7 @@ class Ponte(private val a: MainActivity) {
             lista.put(
                 JSONObject().put("id", p.id).put("nome", p.nome).put("animado", p.animado)
                     .put("figurinhas", figs).put("noWhatsApp", WhatsApp.adicionado(a, p.id))
+                    .put("precisaAtualizar", p.precisaAtualizar)
             )
         }
         return lista.toString()
@@ -58,4 +58,25 @@ class Ponte(private val a: MainActivity) {
 
     @JavascriptInterface
     fun apagar(id: String, arquivo: String) = Pacotes.apagar(a, id, arquivo)
+
+    /** GIFs novos da galeria: {"permissao": bool, "gifs": ["i12", "v34", ...]}. */
+    @JavascriptInterface
+    fun gifsDaGaleria(): String {
+        val json = JSONObject().put("permissao", Galeria.temPermissao(a))
+        if (Galeria.temPermissao(a)) {
+            val lista = try { Galeria.novos(a) } catch (_: Exception) { emptyList() }
+            json.put("gifs", JSONArray(lista.map { it.id }))
+        }
+        return json.toString()
+    }
+
+    @JavascriptInterface
+    fun pedirPermissaoGaleria() = a.pedirPermissaoGaleria()
+
+    @JavascriptInterface
+    fun abrirGif(id: String) = a.abrirGif(id)
+
+    /** ids separados por vírgula: não oferecer de novo. */
+    @JavascriptInterface
+    fun marcarGifsVistos(ids: String) = Galeria.marcarVistos(a, ids.split(',').filter { it.isNotBlank() })
 }

@@ -52,6 +52,13 @@ h3 { font-size: 17px; margin: 0; }
 :focus-visible { outline: 3px solid var(--destaque); outline-offset: 2px; }
 
 /* início */
+.convite { background: var(--sup); border: 1px solid #2e5a43; border-radius: 16px; padding: 16px; margin: -8px 0 24px; }
+.convite p { margin: 0 0 12px; }
+.botoes-convite { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.botoes-convite .bt:first-child { border-color: var(--destaque); color: var(--destaque); }
+.barra-fila { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  background: var(--sup); border-radius: 12px; padding: 4px 4px 4px 14px; margin-bottom: 12px; color: var(--texto2); font-size: 15px; }
+.aviso-pacote { color: var(--texto2); font-size: 15px; margin: 0 0 8px; }
 .link { margin-top: 28px; }
 .link label { display: block; color: var(--texto2); margin-bottom: 8px; }
 .linha { display: flex; gap: 8px; }
@@ -132,7 +139,8 @@ h3 { font-size: 17px; margin: 0; }
 .claro .hora { background: #ffffffd9; color: #667781; }
 .escuro .hora { background: #0b141acc; color: #8696a0; }
 .feito { margin-top: 8px; background: var(--sup); border-radius: 14px; padding: 16px; }
-.feito p { margin: 0 0 14px; }
+.feito p { margin: 0 0 14px; white-space: pre-line; }
+.feito .bt + .bt { margin-top: 10px; }
 
 .video-oculto { position: fixed; left: 0; bottom: 0; width: 2px; height: 2px; opacity: .01; pointer-events: none; }
 

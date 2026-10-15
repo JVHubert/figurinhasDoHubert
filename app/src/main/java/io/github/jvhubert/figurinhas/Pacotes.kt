@@ -19,11 +19,16 @@ object Pacotes {
 
     class Pacote(
         val id: String,
-        val nome: String,
         val animado: Boolean,
         var versao: Long,
+        /** Última versão que o WhatsApp confirmou ter recebido (0 = nunca). */
+        var versaoNoWhatsApp: Long,
         val figurinhas: MutableList<String>,
     ) {
+        val nome get() = Creditos.nomeDoPacote(animado, id.substringAfterLast('-').toIntOrNull() ?: 1)
+        val emoji get() = if (animado) "😂" else "🙂"
+        val precisaAtualizar get() = versao != versaoNoWhatsApp
+
         /** Enquanto o pacote tem menos de 3, repete as que existem (o WhatsApp recusa pacote menor). */
         fun listaParaWhatsApp(): List<String> {
             val lista = figurinhas.toMutableList()
@@ -54,8 +59,8 @@ object Pacotes {
             val o = arr.getJSONObject(i)
             val figs = o.getJSONArray("figurinhas")
             Pacote(
-                o.getString("id"), o.getString("nome"), o.getBoolean("animado"), o.getLong("versao"),
-                MutableList(figs.length()) { figs.getString(it) },
+                o.getString("id"), o.getBoolean("animado"), o.getLong("versao"),
+                o.optLong("versaoNoWhatsApp", 0), MutableList(figs.length()) { figs.getString(it) },
             )
         }
     }
@@ -64,8 +69,8 @@ object Pacotes {
         val arr = JSONArray()
         lista.forEach { p ->
             arr.put(
-                JSONObject().put("id", p.id).put("nome", p.nome).put("animado", p.animado)
-                    .put("versao", p.versao).put("figurinhas", JSONArray(p.figurinhas))
+                JSONObject().put("id", p.id).put("animado", p.animado).put("versao", p.versao)
+                    .put("versaoNoWhatsApp", p.versaoNoWhatsApp).put("figurinhas", JSONArray(p.figurinhas))
             )
         }
         val tmp = File(pasta(ctx), "pacotes.json.tmp")
@@ -79,7 +84,7 @@ object Pacotes {
             ?: novoPacote(lista, animado).also { lista.add(it) }
         val base = "f${System.currentTimeMillis()}"
         val dir = File(pasta(ctx), p.id).apply { mkdirs() }
-        File(dir, "$base.webp").writeBytes(webp)
+        File(dir, "$base.webp").writeBytes(Creditos.comExif(webp, p.id, p.nome, p.emoji))
         File(dir, "$base.png").writeBytes(bandeja)
         p.figurinhas.add("$base.webp")
         p.versao++
@@ -92,9 +97,8 @@ object Pacotes {
         check(lista.size < MAX_PACOTES) { "Já são $MAX_PACOTES pacotes cheios. Apague algumas figurinhas antes." }
         val prefixo = if (animado) "animadas" else "fotos"
         val n = (1..99).first { k -> lista.none { it.id == "$prefixo-$k" } }
-        val nome = (if (animado) "Minhas animadas" else "Minhas figurinhas") + if (n > 1) " $n" else ""
         // A versão começa no relógio para nunca repetir a de um pacote apagado com o mesmo id.
-        return Pacote("$prefixo-$n", nome, animado, System.currentTimeMillis(), mutableListOf())
+        return Pacote("$prefixo-$n", animado, System.currentTimeMillis(), 0, mutableListOf())
     }
 
     fun apagar(ctx: Context, id: String, arquivo: String) = synchronized(trava) {
@@ -112,6 +116,42 @@ object Pacotes {
         }
         gravar(ctx, lista)
         avisarWhatsApp(ctx)
+    }
+
+    /** O WhatsApp confirmou que recebeu o pacote nesta versão. */
+    fun marcarNoWhatsApp(ctx: Context, id: String) = synchronized(trava) {
+        val lista = lerSemTrava(ctx)
+        val p = lista.firstOrNull { it.id == id } ?: return@synchronized
+        p.versaoNoWhatsApp = p.versao
+        gravar(ctx, lista)
+    }
+
+    /**
+     * Figurinhas feitas antes da assinatura do JV: grava o nome do pacote e o autor dentro delas.
+     * Sobe a versão para o WhatsApp oferecer "Atualizar" (e trocar o nome antigo do pacote).
+     */
+    fun assinarAntigas(ctx: Context) = synchronized(trava) {
+        val lista = lerSemTrava(ctx)
+        var mudou = false
+        for (p in lista) {
+            var mudouPacote = false
+            for (nome in p.figurinhas) {
+                val arquivo = File(File(pasta(ctx), p.id), nome)
+                if (!arquivo.exists()) continue
+                val bytes = arquivo.readBytes()
+                if (Creditos.temExif(bytes)) continue
+                arquivo.writeBytes(Creditos.comExif(bytes, p.id, p.nome, p.emoji))
+                mudouPacote = true
+            }
+            if (mudouPacote) {
+                p.versao++
+                mudou = true
+            }
+        }
+        if (mudou) {
+            gravar(ctx, lista)
+            avisarWhatsApp(ctx)
+        }
     }
 
     /** O README do WhatsApp pede para mudar o image_data_version a cada mudança; isto avisa quem estiver lendo. */

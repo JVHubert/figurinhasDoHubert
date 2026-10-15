@@ -34,16 +34,30 @@ class MainActivity : ComponentActivity() {
     private var paginaPronta = false
     private val pendentes = mutableListOf<String>()
     private var pacoteAdicionando: String? = null
+    private var jaEstavaNoWhatsApp = false
 
     private val escolher = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) receberArquivo(uri)
     }
 
+    /**
+     * Volta do WhatsApp. Pacote novo: ok se foi adicionado. Pacote que já estava lá: o WhatsApp
+     * pergunta se quer "Atualizar"; se a pessoa não confirmar, a página ensina a atualizar por lá.
+     */
     private val adicionar = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
         val id = pacoteAdicionando
         val erro = r.data?.getStringExtra("validation_error") ?: ""
-        val ok = r.resultCode == RESULT_OK || (id != null && WhatsApp.adicionado(this, id))
-        chamarJs("aoAdicionar", JSONObject().put("ok", ok).put("erro", erro).toString())
+        val agoraNoWhatsApp = id != null && WhatsApp.adicionado(this, id)
+        val ok = r.resultCode == RESULT_OK || (!jaEstavaNoWhatsApp && agoraNoWhatsApp)
+        if (ok && id != null) Pacotes.marcarNoWhatsApp(this, id)
+        chamarJs(
+            "aoAdicionar",
+            JSONObject().put("ok", ok).put("erro", erro).put("atualizacao", jaEstavaNoWhatsApp).toString(),
+        )
+    }
+
+    private val pedirGaleria = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        chamarJs("aoPermissaoGaleria", Galeria.temPermissao(this).toString())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,6 +114,7 @@ class MainActivity : ComponentActivity() {
 
         tratarIntent(intent)
         baixador.preparar()
+        tarefas.execute { Pacotes.assinarAntigas(applicationContext) }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -159,8 +174,17 @@ class MainActivity : ComponentActivity() {
         escolher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
     }
 
+    fun pedirPermissaoGaleria() = runOnUiThread { pedirGaleria.launch(Galeria.permissoes()) }
+
+    fun abrirGif(id: String) {
+        val uri = Galeria.uriDe(id)
+        if (uri != null) receberArquivo(uri)
+        else chamarJs("aoErro", JSONObject.quote("Não achei esse GIF."))
+    }
+
     fun abrirWhatsApp(p: Pacotes.Pacote) = runOnUiThread {
         pacoteAdicionando = p.id
+        jaEstavaNoWhatsApp = WhatsApp.adicionado(this, p.id)
         try {
             adicionar.launch(WhatsApp.intentAdicionar(p))
         } catch (_: ActivityNotFoundException) {

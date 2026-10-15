@@ -14,6 +14,14 @@
     <h1 id="tituloInicio">Figurinhas</h1>
     <p class="sub">Foto, GIF ou vídeo vira figurinha sem borda, direto no WhatsApp.</p>
 
+    <div id="convite" class="convite" hidden>
+      <p id="conviteTexto"></p>
+      <div class="botoes-convite">
+        <button id="btConvite" class="bt" type="button">Transformar em figurinhas</button>
+        <button id="btConviteNao" class="bt discreto" type="button">Agora não</button>
+      </div>
+    </div>
+
     <button id="btGaleria" class="bt principal grande" type="button">Escolher da galeria</button>
     <input id="arquivo" type="file" accept="image/*,video/*" hidden>
 
@@ -46,6 +54,10 @@
     <div class="barraTopo">
       <button class="bt discreto" type="button" data-voltar>Voltar</button>
       <h2 id="tituloEditor">Ajuste o quadro</h2>
+    </div>
+    <div id="barraFila" class="barra-fila" hidden>
+      <span id="filaTexto"></span>
+      <button id="btPular" class="bt discreto pequeno" type="button">Pular este GIF</button>
     </div>
     <div class="quadro"><canvas id="tela" aria-label="Área da figurinha"></canvas></div>
     <p class="dica centro">Arraste para mover. Use dois dedos para aproximar.</p>
@@ -88,7 +100,9 @@
     <button id="btAdicionar" class="bt principal grande" type="button">Adicionar ao WhatsApp</button>
     <div id="feito" class="feito" hidden>
       <p id="feitoTexto"></p>
+      <button id="btProximo" class="bt principal grande" type="button" hidden>Próximo GIF</button>
       <button id="btOutra" class="bt grande" type="button">Fazer outra</button>
+      <button id="btParar" class="bt discreto" type="button" hidden>Parar por aqui</button>
     </div>
   </section>
 

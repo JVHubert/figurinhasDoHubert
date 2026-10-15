@@ -4,6 +4,8 @@ App Android que transforma foto, GIF ou vídeo (da galeria ou de um link) em fig
 
 **Baixar o APK:** https://github.com/JVHubert/figurinhas/releases/download/ultima/figurinhas.apk
 
+**Página pública (link curto tinyurl.com/figsjv):** https://jvhubert.github.io/figurinhas/ ([docs/index.html](docs/index.html))
+
 ## Como funciona
 
 - A tela é HTML/JS ([app/src/main/assets/web](app/src/main/assets/web)) dentro de um WebView. Lá acontece tudo da figurinha:

@@ -191,29 +191,47 @@ try {
     resultados.push(await cenario('gif', `Fig.mostrar('inicio'); await Fig.abrirBlob(await (await fetch('/amostras/terra.gif')).blob())`));
   }
 
-  // Tela inicial com coleção e fluxo "Adicionar" usando um Android de mentira.
+  // "Começa em" num GIF curto: o começo precisa andar mesmo com a duração no máximo.
+  if (existsSync(join(amostras, 'terra.gif'))) {
+    await avaliar(`(async () => { Fig.mostrar('inicio'); await Fig.abrirBlob(await (await fetch('/amostras/terra.gif')).blob()); })()`);
+    resultados.push({ nome: 'comeca-em', ...await avaliar(`(() => { const i = document.querySelector('#inicio');
+      const antes = { max: i.max, dur: Fig.est.dur, total: Fig.est.midia.duracao };
+      i.value = 3; i.dispatchEvent(new Event('input'));
+      return { antes, depois: { inicio: Fig.est.inicio, dur: Fig.est.dur, txt: document.querySelector('#txtInicio').textContent + ' / ' + document.querySelector('#txtDur').textContent } }; })()`) });
+  }
+
+  // Tela inicial com coleção, convite de GIFs e fluxo "Adicionar/Atualizar" com um Android de mentira.
   await cdp('Page.addScriptToEvaluateOnNewDocument', { source: `
+    window.vistos = [];
     window.Android = {
       versao: () => '1.0.teste', pronto() {}, escolherDaGaleria() {}, baixarLink() {}, cancelarLink() {},
       listar: () => JSON.stringify([
-        { id: 'fotos-1', nome: 'Minhas figurinhas', animado: false, noWhatsApp: true,
+        { id: 'fotos-1', nome: 'Figurinhas do JV', animado: false, noWhatsApp: true, precisaAtualizar: false,
           figurinhas: ['foto', 'foto-cantos', 'foto', 'foto-cantos', 'foto'].map((n, i) => ({ arquivo: 'f' + i, url: '/saida/' + n + '.webp' })) },
-        { id: 'animadas-1', nome: 'Minhas animadas', animado: true, noWhatsApp: false,
+        { id: 'animadas-1', nome: 'Animadas do JV', animado: true, noWhatsApp: true, precisaAtualizar: true,
           figurinhas: ['video', 'gif'].map((n, i) => ({ arquivo: 'a' + i, url: '/saida/' + n + '.webp' })) } ]),
-      salvarFigurinha: () => JSON.stringify({ ok: true, pacote: 'animadas-1', nome: 'Minhas animadas', total: 2, temWhatsApp: true, noWhatsApp: false }),
-      adicionarAoWhatsApp() { setTimeout(() => window.aoAdicionar({ ok: true, erro: '' }), 300); },
+      gifsDaGaleria: () => JSON.stringify({ permissao: true, gifs: ['i1', 'i2', 'i3'] }),
+      abrirGif() { setTimeout(() => window.aoReceberArquivo({ url: '/amostras/terra.gif', mime: 'image/gif' }), 50); },
+      marcarGifsVistos(ids) { window.vistos.push(ids); },
+      salvarFigurinha: () => JSON.stringify({ ok: true, pacote: 'animadas-1', nome: 'Animadas do JV', total: 3, temWhatsApp: true }),
+      adicionarAoWhatsApp() { setTimeout(() => window.aoAdicionar({ ok: false, erro: '', atualizacao: true }), 300); },
       apagar() {},
     };` });
   await abrir(`http://127.0.0.1:${PORTA}/index.html`);
   await avaliar(auxiliares);
   await new Promise((ok) => setTimeout(ok, 800));
   await printPaginaInteira('inicio-app');
-  await avaliar(`(async () => { await Fig.abrirBlob(await (await fetch('/saida/video.webp')).blob()); })()`);
+  await avaliar(`document.querySelector('#btConvite').click()`);
+  await new Promise((ok) => setTimeout(ok, 2500));
+  await print('fila-editor');
+  const barra = await avaliar(`document.querySelector('#barraFila').hidden ? 'escondida' : document.querySelector('#filaTexto').textContent`);
   await avaliar('Fig.gerar()');
   await avaliar(`document.querySelector('#btAdicionar').click()`);
-  await new Promise((ok) => setTimeout(ok, 1200));
-  await printPaginaInteira('concluido-app');
-  resultados.push({ nome: 'fluxo-app', telaFinal: await avaliar(`document.querySelector('#feitoTexto').textContent`) });
+  await new Promise((ok) => setTimeout(ok, 1500));
+  await printPaginaInteira('fila-concluido');
+  resultados.push({ nome: 'fila-e-atualizar', barra, vistos: await avaliar('window.vistos'),
+    proximo: await avaliar(`document.querySelector('#btProximo').hidden ? 'escondido' : document.querySelector('#btProximo').textContent`),
+    telaFinal: await avaliar(`document.querySelector('#feitoTexto').textContent`) });
 } catch (e) {
   resultados.push({ erroGeral: e.message });
 } finally {

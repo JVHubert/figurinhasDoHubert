@@ -20,6 +20,7 @@ const est = {
   inicio: 0, dur: 3, t0: 0,
   resultado: null, // { blob, bandeja, animada, info, url }
   ultimoPacote: null,
+  fila: null, // GIFs da galeria, um de cada vez: { ids: [...], pos }
 };
 
 /* ---------- utilidades ---------- */
@@ -92,7 +93,7 @@ window.voltar = () => {
   if (fecharDialogo) { fecharDialogo(false); return true; }
   if (!$('#ocupado').hidden) return true;
   if (est.tela === 'previa') { mostrar('editor'); return true; }
-  if (est.tela === 'editor') { fecharMidia(); mostrar('inicio'); return true; }
+  if (est.tela === 'editor') { pararFila(); fecharMidia(); mostrar('inicio'); return true; }
   return false;
 };
 document.querySelectorAll('[data-voltar]').forEach((b) => { b.onclick = () => window.voltar(); });
@@ -121,11 +122,13 @@ async function abrirBlob(blob, mime) {
     prepararEditor();
     mostrar('editor');
     ocupado(null);
+    return true;
   } catch (e) {
     console.error(e);
     fecharMidia();
     ocupado(null);
-    aviso('Não consegui abrir esse arquivo.\n' + (e.message || ''));
+    await aviso('Não consegui abrir esse arquivo.\n' + (e.message || ''));
+    return false;
   }
 }
 
@@ -277,13 +280,15 @@ function prepararEditor() {
   $('#trecho').hidden = !animado;
   if (animado) {
     const maxDur = Math.min(MAX_SEG, m.duracao);
+    const minDur = Math.min(0.5, maxDur);
     est.inicio = 0;
     est.dur = Math.min(m.tipo === 'video' ? 3 : 6, maxDur);
     const d = $('#duracao');
-    d.min = Math.min(0.5, maxDur);
+    d.min = minDur;
     d.max = maxDur.toFixed(1);
     d.value = est.dur;
-    $('#inicio').max = Math.max(0, m.duracao - est.dur).toFixed(1);
+    // O começo pode ir até quase o fim; se passar, a duração encolhe sozinha.
+    $('#inicio').max = Math.max(0, m.duracao - minDur).toFixed(1);
     $('#inicio').value = 0;
     if (m.tipo === 'video') m.el.currentTime = 0;
   }
@@ -306,15 +311,20 @@ $('#zoom').oninput = (e) => {
 };
 $('#inicio').oninput = (e) => {
   est.inicio = +e.target.value;
+  const resta = Math.floor((est.midia.duracao - est.inicio) * 10) / 10;
+  if (est.dur > resta) { est.dur = Math.max(+$('#duracao').min, resta); $('#duracao').value = est.dur; }
   est.t0 = performance.now();
   if (est.midia.tipo === 'video') est.midia.el.currentTime = est.inicio;
   atualizarTrecho();
 };
 $('#duracao').oninput = (e) => {
   est.dur = +e.target.value;
-  const max = Math.max(0, est.midia.duracao - est.dur);
-  $('#inicio').max = max.toFixed(1);
-  if (est.inicio > max) { est.inicio = max; $('#inicio').value = max; }
+  const max = Math.max(0, Math.floor((est.midia.duracao - est.dur) * 10) / 10);
+  if (est.inicio > max) {
+    est.inicio = max;
+    $('#inicio').value = max;
+    if (est.midia.tipo === 'video') est.midia.el.currentTime = est.inicio;
+  }
   est.t0 = performance.now();
   atualizarTrecho();
 };
@@ -670,13 +680,27 @@ function baixarArquivo(blob, nome) {
 function textoPronto(p) {
   let t = `Pronto! Ela está no pacote "${p.nome}", na aba de figurinhas do WhatsApp.`;
   if (p.total < 3) t += ' Enquanto o pacote tiver menos de 3 figurinhas, ela aparece repetida.';
-  return t + ' Se não aparecer na hora, feche e abra o WhatsApp.';
+  return t;
+}
+
+// O WhatsApp não puxa figurinha nova sozinho: o pacote mostra "Atualizar" e é preciso tocar.
+function textoAtualizar(p) {
+  return `A figurinha foi salva no pacote "${p.nome}". Falta só o WhatsApp atualizar o pacote:\n` +
+    '1. No WhatsApp, abra uma conversa e toque no ícone de figurinhas.\n' +
+    `2. Ache o pacote "${p.nome}": ele mostra a opção Atualizar.\n` +
+    '3. Toque em Atualizar.\n' +
+    'Ou toque em "Atualizar no WhatsApp" na tela inicial do app.';
 }
 
 function concluir(texto) {
   $('#btAdicionar').hidden = true;
   $('#feito').hidden = false;
   $('#feitoTexto').textContent = texto;
+  const faltam = est.fila ? est.fila.ids.length - est.fila.pos - 1 : 0;
+  $('#btProximo').hidden = faltam <= 0;
+  $('#btProximo').textContent = `Próximo GIF (faltam ${faltam})`;
+  $('#btParar').hidden = faltam <= 0;
+  $('#btOutra').hidden = faltam > 0;
 }
 
 $('#btAdicionar').onclick = async () => {
@@ -690,10 +714,11 @@ $('#btAdicionar').onclick = async () => {
     ocupado(null);
     if (!res.ok) { aviso(res.erro); return; }
     est.ultimoPacote = res;
+    if (est.fila) window.Android.marcarGifsVistos(est.fila.ids[est.fila.pos]);
     carregarColecao();
     if (!res.temWhatsApp) concluir('A figurinha ficou salva no app, mas não achei o WhatsApp neste celular.');
-    else if (res.noWhatsApp) concluir(textoPronto(res));
-    else window.Android.adicionarAoWhatsApp(res.pacote); // o WhatsApp pergunta se pode adicionar o pacote
+    // Pacote novo: o WhatsApp pergunta se pode adicionar. Pacote que já está lá: pergunta se quer atualizar.
+    else window.Android.adicionarAoWhatsApp(res.pacote);
   } catch (e) {
     ocupado(null);
     aviso('Não consegui salvar: ' + e.message);
@@ -703,18 +728,100 @@ $('#btAdicionar').onclick = async () => {
 window.aoAdicionar = (r) => {
   carregarColecao();
   const p = est.ultimoPacote;
-  if (est.tela === 'previa' && $('#feito').hidden) {
-    if (r.ok) concluir(textoPronto(p));
-    else if (r.erro) aviso('O WhatsApp recusou o pacote:\n' + r.erro);
-    else concluir('A figurinha ficou salva no app. Para mandar ao WhatsApp depois, use o botão "Adicionar ao WhatsApp" na tela inicial.');
-  } else if (r.ok) {
-    aviso('Pacote adicionado ao WhatsApp.');
-  } else if (r.erro) {
-    aviso('O WhatsApp recusou o pacote:\n' + r.erro);
-  }
+  const naPrevia = est.tela === 'previa' && $('#feito').hidden;
+  let texto;
+  if (r.ok) texto = r.atualizacao ? `Pronto! O pacote "${p.nome}" foi atualizado no WhatsApp.` : textoPronto(p);
+  else if (r.atualizacao) texto = textoAtualizar(p);
+  else if (r.erro) { aviso('O WhatsApp recusou o pacote:\n' + r.erro); return; }
+  else texto = 'A figurinha ficou salva no app. Para mandar ao WhatsApp depois, toque em "Adicionar ao WhatsApp" na tela inicial.';
+  if (naPrevia) concluir(texto); else aviso(texto);
 };
 
-$('#btOutra').onclick = () => { fecharMidia(); mostrar('inicio'); };
+$('#btOutra').onclick = () => { pararFila(); fecharMidia(); mostrar('inicio'); };
+$('#btProximo').onclick = () => { est.fila.pos++; fecharMidia(); abrirGifDaFila(); };
+$('#btParar').onclick = () => { pararFila(); fecharMidia(); mostrar('inicio'); };
+
+/* ---------- GIFs da galeria: convite e fila "um de cada vez" ---------- */
+
+function gifsDaGaleria() {
+  try { return JSON.parse(window.Android.gifsDaGaleria()); } catch { return { permissao: false }; }
+}
+
+function naoPerguntarGaleria() {
+  try { return localStorage.getItem('conviteGaleria') === 'nao'; } catch { return false; }
+}
+
+function atualizarConvite() {
+  if (!temApp || est.fila) { $('#convite').hidden = true; return; }
+  const g = gifsDaGaleria();
+  if (!g.permissao) {
+    $('#convite').hidden = naoPerguntarGaleria();
+    $('#conviteTexto').textContent = 'Tem GIFs salvos no celular? O app procura na galeria e transforma em figurinhas, um de cada vez.';
+    $('#btConvite').textContent = 'Procurar GIFs na galeria';
+    $('#btConvite').onclick = () => window.Android.pedirPermissaoGaleria();
+    $('#btConviteNao').onclick = () => {
+      try { localStorage.setItem('conviteGaleria', 'nao'); } catch { /* sem armazenamento */ }
+      $('#convite').hidden = true;
+    };
+    return;
+  }
+  const ids = g.gifs || [];
+  const n = ids.length;
+  $('#convite').hidden = n === 0;
+  if (n === 0) return;
+  $('#conviteTexto').textContent = n === 1
+    ? 'Achei 1 GIF novo na sua galeria. Quer transformar em figurinha?'
+    : `Achei ${n} GIFs novos na sua galeria. Quer transformar em figurinhas, um de cada vez?`;
+  $('#btConvite').textContent = n === 1 ? 'Transformar em figurinha' : 'Começar pelo mais novo';
+  $('#btConvite').onclick = () => { est.fila = { ids, pos: 0 }; $('#convite').hidden = true; abrirGifDaFila(); };
+  $('#btConviteNao').onclick = async () => {
+    const pergunta = n === 1 ? 'Ignorar este GIF?' : `Ignorar estes ${n} GIFs?`;
+    if (await perguntar(pergunta + ' O app só vai avisar de novo quando aparecer GIF novo.', 'Ignorar', 'Voltar')) {
+      window.Android.marcarGifsVistos(ids.join(','));
+      $('#convite').hidden = true;
+    }
+  };
+}
+
+window.aoPermissaoGaleria = (ok) => {
+  if (!ok) {
+    aviso('Sem permissão para ver a galeria. Se mudar de ideia: Configurações > Aplicativos > Figurinhas > Permissões > Fotos e vídeos.');
+    return;
+  }
+  atualizarConvite();
+  if ($('#convite').hidden) aviso('Não achei GIFs na galeria agora. Quando aparecer algum, o app avisa aqui.');
+};
+
+function abrirGifDaFila() {
+  const f = est.fila;
+  if (!f || f.pos >= f.ids.length) {
+    pararFila();
+    mostrar('inicio');
+    aviso('Pronto, acabaram os GIFs.');
+    return;
+  }
+  window.Android.abrirGif(f.ids[f.pos]);
+}
+
+function pararFila() {
+  est.fila = null;
+  $('#barraFila').hidden = true;
+  atualizarConvite();
+}
+
+function atualizarBarraFila() {
+  const f = est.fila;
+  $('#barraFila').hidden = !f;
+  if (f) $('#filaTexto').textContent = `GIF ${f.pos + 1} de ${f.ids.length}`;
+}
+
+$('#btPular').onclick = () => {
+  if (!est.fila) return;
+  window.Android.marcarGifsVistos(est.fila.ids[est.fila.pos]);
+  est.fila.pos++;
+  fecharMidia();
+  abrirGifDaFila();
+};
 
 /* ---------- tela inicial: galeria, link e coleção ---------- */
 
@@ -760,22 +867,32 @@ $('#btCancelarLink').onclick = () => {
 
 async function abrirDoApp(url, mime) {
   ocupado('Abrindo…', 0);
+  let abriu = false;
   try {
     const resp = await fetch(url);
     if (!resp.ok) throw new Error('o arquivo não foi encontrado');
-    await abrirBlob(await resp.blob(), mime);
+    abriu = await abrirBlob(await resp.blob(), mime);
   } catch (e) {
     ocupado(null);
-    aviso('Não consegui abrir: ' + e.message);
+    await aviso('Não consegui abrir: ' + e.message);
+  }
+  if (!est.fila) return;
+  if (abriu) {
+    atualizarBarraFila();
+  } else { // GIF com defeito: marca como visto e segue para o próximo
+    window.Android.marcarGifsVistos(est.fila.ids[est.fila.pos]);
+    est.fila.pos++;
+    abrirGifDaFila();
   }
 }
 
 // Chamadas que o Android faz na página
 window.aoCarregando = (texto) => ocupado(texto, 0);
-window.aoErro = (texto) => { ocupado(null); esconderStatus(); aviso(texto); };
-window.aoReceberArquivo = (r) => { esconderStatus(); abrirDoApp(r.url, r.mime); };
+window.aoErro = (texto) => { ocupado(null); esconderStatus(); pararFila(); aviso(texto); };
+window.aoReceberArquivo = (r) => { esconderStatus(); $('#barraFila').hidden = true; abrirDoApp(r.url, r.mime); };
 window.aoReceberLink = (url) => {
   if (fecharDialogo) fecharDialogo(false);
+  pararFila();
   fecharMidia();
   mostrar('inicio');
   baixarLink(url);
@@ -801,14 +918,20 @@ function carregarColecao() {
     const n = p.figurinhas.length;
     cab.append(el('h3', '', p.nome), el('span', 'contagem', `${n} de 30${p.noWhatsApp ? ' · no WhatsApp' : ''}`));
     bloco.append(cab);
-    if (!p.noWhatsApp) {
-      const b = el('button', 'bt pequeno', 'Adicionar ao WhatsApp');
+    const enviar = (rotulo) => {
+      const b = el('button', 'bt pequeno', rotulo);
       b.type = 'button';
       b.onclick = () => {
         est.ultimoPacote = { pacote: p.id, nome: p.nome, total: n };
         window.Android.adicionarAoWhatsApp(p.id);
       };
       bloco.append(b);
+    };
+    if (!p.noWhatsApp) {
+      enviar('Adicionar ao WhatsApp');
+    } else if (p.precisaAtualizar) {
+      bloco.append(el('p', 'aviso-pacote', 'Tem figurinha nova que o WhatsApp ainda não pegou.'));
+      enviar('Atualizar no WhatsApp');
     }
     const grade = el('div', 'grade');
     for (const f of p.figurinhas) {
@@ -838,7 +961,12 @@ function carregarColecao() {
 if (temApp) {
   try { $('#versao').textContent = 'Versão ' + window.Android.versao(); } catch { /* sem versão */ }
   carregarColecao();
+  atualizarConvite();
   window.Android.pronto();
+  // Voltou para o app (do WhatsApp, da galeria...): pode ter GIF novo ou pacote atualizado.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && est.tela === 'inicio') { carregarColecao(); atualizarConvite(); }
+  });
 }
 
 // Para os testes automáticos no navegador do PC.
