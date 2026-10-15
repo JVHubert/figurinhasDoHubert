@@ -35,3 +35,7 @@ node teste/rodar.mjs <pasta-com-terra.gif>
 ```
 
 O script abre o editor no Chrome sem janela e gera figurinhas de foto, vídeo e GIF em `teste/saida/`, com prints em largura de celular.
+
+## Licença
+
+Open source, sob a [GPL-3.0](LICENSE). A licença acompanha a do [youtubedl-android](https://github.com/yausername/youtubedl-android), que vai junto no APK.
