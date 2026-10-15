@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="fundo">#FF0F1216</color>
+    <color name="destaque">#FF3CCF7F</color>
+    <color name="dobra">#FFBFEFD3</color>
+    <color name="rosto">#FF0B1A12</color>
+</resources>

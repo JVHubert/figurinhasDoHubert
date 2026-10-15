@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Figurinhas</title>
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<main>
+
+  <section id="inicio" class="tela ativa" aria-labelledby="tituloInicio">
+    <h1 id="tituloInicio">Figurinhas</h1>
+    <p class="sub">Foto, GIF ou vídeo vira figurinha sem borda, direto no WhatsApp.</p>
+
+    <button id="btGaleria" class="bt principal grande" type="button">Escolher da galeria</button>
+    <input id="arquivo" type="file" accept="image/*,video/*" hidden>
+
+    <form id="formLink" class="link">
+      <label for="campoLink">Ou cole um link</label>
+      <div class="linha">
+        <input id="campoLink" type="url" inputmode="url" autocomplete="off"
+               placeholder="YouTube, Instagram, TikTok, X, GIF…">
+        <button class="bt" type="submit">Baixar</button>
+      </div>
+      <p class="dica">No Instagram ou no YouTube, toque em Compartilhar e escolha Figurinhas.</p>
+    </form>
+
+    <div id="status" class="status" hidden>
+      <p id="statusTexto">Baixando…</p>
+      <div class="barra"><div id="statusBarra"></div></div>
+      <button id="btCancelarLink" class="bt discreto" type="button">Cancelar</button>
+    </div>
+
+    <section id="colecao" hidden aria-labelledby="tituloColecao">
+      <h2 id="tituloColecao">Suas figurinhas</h2>
+      <div id="pacotes"></div>
+      <p class="dica">Toque numa figurinha para apagar.</p>
+    </section>
+
+    <p id="versao" class="versao"></p>
+  </section>
+
+  <section id="editor" class="tela" aria-labelledby="tituloEditor">
+    <div class="barraTopo">
+      <button class="bt discreto" type="button" data-voltar>Voltar</button>
+      <h2 id="tituloEditor">Ajuste o quadro</h2>
+    </div>
+    <div class="quadro"><canvas id="tela" aria-label="Área da figurinha"></canvas></div>
+    <p class="dica centro">Arraste para mover. Use dois dedos para aproximar.</p>
+
+    <div class="segmento" role="group" aria-label="Enquadramento">
+      <button id="btInteira" type="button" class="ativo">Mostrar inteira</button>
+      <button id="btPreencher" type="button">Preencher</button>
+    </div>
+    <label class="controle">Zoom
+      <input id="zoom" type="range" min="0" max="1000" value="500">
+    </label>
+    <label class="check"><input id="cantos" type="checkbox"> Cantos arredondados</label>
+
+    <div id="trecho" hidden>
+      <label class="controle">Começa em <output id="txtInicio">0,0 s</output>
+        <input id="inicio" type="range" min="0" max="10" step="0.1" value="0">
+      </label>
+      <label class="controle">Duração <output id="txtDur">3,0 s</output>
+        <input id="duracao" type="range" min="0.5" max="10" step="0.1" value="3">
+      </label>
+    </div>
+
+    <button id="btPronto" class="bt principal grande" type="button">Ver como fica</button>
+  </section>
+
+  <section id="previa" class="tela" aria-labelledby="tituloPrevia">
+    <div class="barraTopo">
+      <button class="bt discreto" type="button" data-voltar>Ajustar</button>
+      <h2 id="tituloPrevia">Assim fica no WhatsApp</h2>
+    </div>
+    <div class="conversa claro">
+      <div class="balao">kkkkkk olha isso</div>
+      <div class="figura"><img class="fig" alt="Prévia da figurinha no tema claro"><span class="hora">10:42</span></div>
+    </div>
+    <div class="conversa escuro">
+      <div class="balao">kkkkkk olha isso</div>
+      <div class="figura"><img class="fig" alt="Prévia da figurinha no tema escuro"><span class="hora">10:42</span></div>
+    </div>
+    <p id="infoFig" class="dica centro"></p>
+    <button id="btAdicionar" class="bt principal grande" type="button">Adicionar ao WhatsApp</button>
+    <div id="feito" class="feito" hidden>
+      <p id="feitoTexto"></p>
+      <button id="btOutra" class="bt grande" type="button">Fazer outra</button>
+    </div>
+  </section>
+
+</main>
+
+<div id="ocupado" class="janela" hidden>
+  <div class="caixa" role="status">
+    <p id="ocupadoTexto">Montando…</p>
+    <div class="barra"><div id="ocupadoBarra"></div></div>
+  </div>
+</div>
+
+<div id="dialogo" class="janela" hidden>
+  <div class="caixa" role="dialog" aria-modal="true" aria-labelledby="dialogoTexto">
+    <p id="dialogoTexto"></p>
+    <div class="botoes">
+      <button id="dialogoNao" class="bt discreto" type="button">Cancelar</button>
+      <button id="dialogoSim" class="bt principal" type="button">OK</button>
+    </div>
+  </div>
+</div>
+
+<script src="webp.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+name: APK
+
+# A cada push na main: compila o APK assinado e publica no release "ultima".
+# Link fixo para baixar: https://github.com/JVHubert/figurinhas/releases/download/ultima/figurinhas.apk
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.11.1"
+
+      - name: Chave de assinatura
+        env:
+          CHAVE_B64: ${{ secrets.CHAVE_B64 }}
+        run: echo "$CHAVE_B64" | base64 -d > "$RUNNER_TEMP/chave.p12"
+
+      - name: Compilar
+        env:
+          CHAVE_ARQUIVO: ${{ runner.temp }}/chave.p12
+          CHAVE_SENHA: ${{ secrets.CHAVE_SENHA }}
+          CHAVE_ALIAS: figurinhas
+        run: gradle assembleRelease --no-daemon --stacktrace
+
+      - name: Publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk figurinhas.apk
+          gh release delete ultima --yes --cleanup-tag || true
+          gh release create ultima figurinhas.apk \
+            --title "Figurinhas (versão 1.0.${{ github.run_number }})" \
+            --notes "Baixe figurinhas.apk no celular e instale. Para atualizar, instale por cima: as figurinhas continuam."

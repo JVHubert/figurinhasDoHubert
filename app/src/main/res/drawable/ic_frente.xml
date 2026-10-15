@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Figurinha verde com a ponta descolando e um rostinho. Área segura do ícone: 21 a 87. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="@color/destaque"
+        android:pathData="M38,29 H63 L80,46 V71 Q80,79 72,79 H38 Q29,79 29,71 V37 Q29,29 38,29 Z" />
+    <path
+        android:fillColor="@color/dobra"
+        android:pathData="M63,29 V40 Q63,46 69,46 H80 Z" />
+    <path
+        android:fillColor="@color/rosto"
+        android:pathData="M41,53 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0 Z M58,53 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0 Z" />
+    <path
+        android:strokeColor="@color/rosto"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M43,63 Q53,71 63,63" />
+</vector>

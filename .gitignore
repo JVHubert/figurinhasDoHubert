@@ -1,0 +1,11 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+*.apk
+*.p12
+*.jks
+*.keystore
+teste/saida/
+node_modules/
