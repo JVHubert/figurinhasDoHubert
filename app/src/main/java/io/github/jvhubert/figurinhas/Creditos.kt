@@ -7,12 +7,12 @@ import java.io.ByteArrayOutputStream
 /** Assinatura do Hubert (JV) nos pacotes e dentro de cada figurinha (quem recebe vê ao tocar nela). */
 object Creditos {
     const val AUTOR = "Hubert"
-    const val LINK_CURTO = "tinyurl.com/figsHubert"
+    const val LINK_CURTO = "tinyurl.com/figurinhasDoHubert"
     const val SITE = "https://jvhubert.github.io/figurinhasDoHubert/"
     const val PUBLICADOR = "$AUTOR · faça as suas: $LINK_CURTO"
 
-    fun nomeDoPacote(animado: Boolean, n: Int) =
-        (if (animado) "Gifs do $AUTOR" else "Figurinhas do $AUTOR") + if (n > 1) " $n" else ""
+    /** Nome dos pacotes enquanto a pessoa não escolhe outro (dá para renomear no app). */
+    fun nomePadrao(animado: Boolean) = if (animado) "Gifs do $AUTOR" else "Figurinhas do $AUTOR"
 
     /**
      * Grava no WebP o bloco EXIF que o WhatsApp lê (nome do pacote e autor), no mesmo formato

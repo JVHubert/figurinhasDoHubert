@@ -20,12 +20,14 @@ object Pacotes {
     class Pacote(
         val id: String,
         val animado: Boolean,
+        /** Nome escolhido para o tipo de pacote (os seguintes ganham " 2", " 3"...). */
+        val nomeBase: String,
         var versao: Long,
         /** Última versão que o WhatsApp confirmou ter recebido (0 = nunca). */
         var versaoNoWhatsApp: Long,
         val figurinhas: MutableList<String>,
     ) {
-        val nome get() = Creditos.nomeDoPacote(animado, id.substringAfterLast('-').toIntOrNull() ?: 1)
+        val nome get() = nomeBase + (id.substringAfterLast('-').toIntOrNull()?.takeIf { it > 1 }?.let { " $it" } ?: "")
         val emoji get() = if (animado) "😂" else "🙂"
         val precisaAtualizar get() = versao != versaoNoWhatsApp
 
@@ -49,17 +51,24 @@ object Pacotes {
 
     private fun indice(ctx: Context) = File(pasta(ctx), "pacotes.json")
 
+    private fun prefsNomes(ctx: Context) = ctx.getSharedPreferences("nomes", Context.MODE_PRIVATE)
+
+    fun nomeBase(ctx: Context, animado: Boolean): String =
+        prefsNomes(ctx).getString(if (animado) "animadas" else "fotos", null) ?: Creditos.nomePadrao(animado)
+
     fun ler(ctx: Context): List<Pacote> = synchronized(trava) { lerSemTrava(ctx) }
 
     private fun lerSemTrava(ctx: Context): MutableList<Pacote> {
         val arquivo = indice(ctx)
         if (!arquivo.exists()) return mutableListOf()
         val arr = JSONObject(arquivo.readText()).getJSONArray("pacotes")
+        val nomes = mapOf(false to nomeBase(ctx, false), true to nomeBase(ctx, true))
         return MutableList(arr.length()) { i ->
             val o = arr.getJSONObject(i)
             val figs = o.getJSONArray("figurinhas")
+            val animado = o.getBoolean("animado")
             Pacote(
-                o.getString("id"), o.getBoolean("animado"), o.getLong("versao"),
+                o.getString("id"), animado, nomes.getValue(animado), o.getLong("versao"),
                 o.optLong("versaoNoWhatsApp", 0), MutableList(figs.length()) { figs.getString(it) },
             )
         }
@@ -81,7 +90,7 @@ object Pacotes {
     fun adicionar(ctx: Context, webp: ByteArray, bandeja: ByteArray, animado: Boolean): Pacote = synchronized(trava) {
         val lista = lerSemTrava(ctx)
         val p = lista.lastOrNull { it.animado == animado && it.figurinhas.size < MAX_POR_PACOTE }
-            ?: novoPacote(lista, animado).also { lista.add(it) }
+            ?: novoPacote(ctx, lista, animado).also { lista.add(it) }
         val base = "f${System.currentTimeMillis()}"
         val dir = File(pasta(ctx), p.id).apply { mkdirs() }
         File(dir, "$base.webp").writeBytes(Creditos.comExif(webp, p.id, p.nome, p.emoji))
@@ -93,12 +102,12 @@ object Pacotes {
         p
     }
 
-    private fun novoPacote(lista: List<Pacote>, animado: Boolean): Pacote {
+    private fun novoPacote(ctx: Context, lista: List<Pacote>, animado: Boolean): Pacote {
         check(lista.size < MAX_PACOTES) { "Já são $MAX_PACOTES pacotes cheios. Apague algumas figurinhas antes." }
         val prefixo = if (animado) "animadas" else "fotos"
         val n = (1..99).first { k -> lista.none { it.id == "$prefixo-$k" } }
         // A versão começa no relógio para nunca repetir a de um pacote apagado com o mesmo id.
-        return Pacote("$prefixo-$n", animado, System.currentTimeMillis(), 0, mutableListOf())
+        return Pacote("$prefixo-$n", animado, nomeBase(ctx, animado), System.currentTimeMillis(), 0, mutableListOf())
     }
 
     fun apagar(ctx: Context, id: String, arquivo: String) = synchronized(trava) {
@@ -130,7 +139,17 @@ object Pacotes {
      * Figurinhas sem assinatura (ou com nome antigo de pacote): grava o nome do pacote e o autor atuais.
      * Sobe a versão para o WhatsApp oferecer "Atualizar" (e trocar o nome antigo do pacote).
      */
-    fun assinarAntigas(ctx: Context) = synchronized(trava) {
+    fun assinarAntigas(ctx: Context) = synchronized(trava) { assinarSemTrava(ctx) }
+
+    /** Troca o nome dos pacotes de um tipo (fotos ou animadas) e regrava a assinatura das figurinhas. */
+    fun renomear(ctx: Context, animado: Boolean, nome: String) = synchronized(trava) {
+        val limpo = nome.trim().replace(Regex("\\s+"), " ").take(40)
+        require(limpo.isNotEmpty()) { "O nome não pode ficar vazio." }
+        prefsNomes(ctx).edit().putString(if (animado) "animadas" else "fotos", limpo).commit()
+        assinarSemTrava(ctx)
+    }
+
+    private fun assinarSemTrava(ctx: Context) {
         val lista = lerSemTrava(ctx)
         var mudou = false
         for (p in lista) {

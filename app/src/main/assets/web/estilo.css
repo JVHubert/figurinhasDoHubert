@@ -57,7 +57,13 @@ h3 { font-size: 17px; margin: 0; }
 .botoes-convite { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .botoes-convite .bt:first-child { border-color: var(--destaque); color: var(--destaque); }
 .barra-fila { display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  background: var(--sup); border-radius: 12px; padding: 4px 4px 4px 14px; margin-bottom: 12px; color: var(--texto2); font-size: 15px; }
+  background: var(--sup); border-radius: 12px; padding: 4px; margin-bottom: 12px; color: var(--texto2); font-size: 15px; }
+.barra-fila .bt:disabled { opacity: .35; }
+.link-gifs { display: block; width: 100%; margin-top: 8px; color: var(--destaque); }
+.campo-dialogo { display: block; width: 100%; font: inherit; color: var(--texto); background: var(--fundo);
+  border: 1px solid var(--linha); border-radius: 10px; padding: 12px; margin: 4px 0 8px; }
+.cab-pacote .bt { margin: 0; padding: 4px 8px; font-size: 14px; }
+.cab-pacote h3 { flex: 1; }
 .aviso-pacote { color: var(--texto2); font-size: 15px; margin: 0 0 8px; }
 .link { margin-top: 28px; }
 .link label { display: block; color: var(--texto2); margin-bottom: 8px; }

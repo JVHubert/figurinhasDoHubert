@@ -23,6 +23,7 @@
     </div>
 
     <button id="btGaleria" class="bt principal grande" type="button">Escolher da galeria</button>
+    <button id="btTodosGifs" class="bt discreto link-gifs" type="button" hidden>Ver os GIFs da galeria</button>
     <input id="arquivo" type="file" accept="image/*,video/*" hidden>
 
     <form id="formLink" class="link">
@@ -56,8 +57,9 @@
       <h2 id="tituloEditor">Ajuste o quadro</h2>
     </div>
     <div id="barraFila" class="barra-fila" hidden>
+      <button id="btAnterior" class="bt discreto pequeno" type="button">Anterior</button>
       <span id="filaTexto"></span>
-      <button id="btPular" class="bt discreto pequeno" type="button">Pular este GIF</button>
+      <button id="btPular" class="bt discreto pequeno" type="button">Pular</button>
     </div>
     <div class="quadro"><canvas id="tela" aria-label="Área da figurinha"></canvas></div>
     <p class="dica centro">Arraste para mover. Use dois dedos para aproximar.</p>
@@ -118,6 +120,7 @@
 <div id="dialogo" class="janela" hidden>
   <div class="caixa" role="dialog" aria-modal="true" aria-labelledby="dialogoTexto">
     <p id="dialogoTexto"></p>
+    <input id="dialogoCampo" class="campo-dialogo" type="text" maxlength="40" autocomplete="off" hidden>
     <div class="botoes">
       <button id="dialogoNao" class="bt discreto" type="button">Cancelar</button>
       <button id="dialogoSim" class="bt principal" type="button">OK</button>

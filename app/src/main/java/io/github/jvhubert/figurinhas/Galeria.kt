@@ -14,7 +14,7 @@ import android.provider.MediaStore
  * Lembra quais já foram oferecidos, para convidar só com os novos.
  */
 object Galeria {
-    class Gif(val id: String, val uri: Uri, val mime: String)
+    class Gif(val id: String, val uri: Uri, val mime: String, val visto: Boolean)
 
     private const val PREFS = "galeria"
     private const val VISTOS = "vistos"
@@ -39,8 +39,8 @@ object Galeria {
         }
     }
 
-    /** GIFs ainda não oferecidos, do mais novo para o mais antigo. */
-    fun novos(ctx: Context): List<Gif> {
+    /** Todos os GIFs, do mais novo para o mais antigo; "visto" = já foi oferecido. */
+    fun todos(ctx: Context): List<Gif> {
         val vistos = vistos(ctx)
         val achados = mutableListOf<Pair<Long, Gif>>()
         val r = ctx.contentResolver
@@ -50,7 +50,7 @@ object Galeria {
         r.query(imagens, colunas, "${MediaStore.MediaColumns.MIME_TYPE} = ?", arrayOf("image/gif"), null)?.use { c ->
             while (c.moveToNext()) {
                 val id = c.getLong(0)
-                achados.add(c.getLong(1) to Gif("i$id", ContentUris.withAppendedId(imagens, id), "image/gif"))
+                achados.add(c.getLong(1) to Gif("i$id", ContentUris.withAppendedId(imagens, id), "image/gif", "i$id" in vistos))
             }
         }
 
@@ -60,11 +60,11 @@ object Galeria {
         )?.use { c ->
             while (c.moveToNext()) {
                 val id = c.getLong(0)
-                achados.add(c.getLong(1) to Gif("v$id", ContentUris.withAppendedId(videos, id), "video/mp4"))
+                achados.add(c.getLong(1) to Gif("v$id", ContentUris.withAppendedId(videos, id), "video/mp4", "v$id" in vistos))
             }
         }
 
-        return achados.sortedByDescending { it.first }.map { it.second }.filter { it.id !in vistos }
+        return achados.sortedByDescending { it.first }.map { it.second }
     }
 
     fun uriDe(id: String): Uri? {

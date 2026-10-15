@@ -48,7 +48,7 @@ class Ponte(private val a: MainActivity) {
             val figs = JSONArray()
             p.figurinhas.forEach { figs.put(JSONObject().put("arquivo", it).put("url", "/figurinhas/${p.id}/$it")) }
             lista.put(
-                JSONObject().put("id", p.id).put("nome", p.nome).put("animado", p.animado)
+                JSONObject().put("id", p.id).put("nome", p.nome).put("nomeBase", p.nomeBase).put("animado", p.animado)
                     .put("figurinhas", figs).put("noWhatsApp", WhatsApp.adicionado(a, p.id))
                     .put("precisaAtualizar", p.precisaAtualizar)
             )
@@ -59,15 +59,24 @@ class Ponte(private val a: MainActivity) {
     @JavascriptInterface
     fun apagar(id: String, arquivo: String) = Pacotes.apagar(a, id, arquivo)
 
-    /** GIFs novos da galeria: {"permissao": bool, "gifs": ["i12", "v34", ...]}. */
+    /** GIFs da galeria: {"permissao": bool, "gifs": [{"id": "i12", "visto": false}, ...]}. */
     @JavascriptInterface
     fun gifsDaGaleria(): String {
         val json = JSONObject().put("permissao", Galeria.temPermissao(a))
         if (Galeria.temPermissao(a)) {
-            val lista = try { Galeria.novos(a) } catch (_: Exception) { emptyList() }
-            json.put("gifs", JSONArray(lista.map { it.id }))
+            val lista = try { Galeria.todos(a) } catch (_: Exception) { emptyList() }
+            json.put("gifs", JSONArray(lista.map { JSONObject().put("id", it.id).put("visto", it.visto) }))
         }
         return json.toString()
+    }
+
+    /** Troca o nome dos pacotes de fotos (animado = false) ou de GIFs (animado = true). "" se deu certo. */
+    @JavascriptInterface
+    fun renomearPacote(animado: Boolean, nome: String): String = try {
+        Pacotes.renomear(a, animado, nome)
+        ""
+    } catch (e: Exception) {
+        e.message ?: "Não consegui trocar o nome."
     }
 
     @JavascriptInterface

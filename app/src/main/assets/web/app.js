@@ -88,6 +88,19 @@ $('#dialogoSim').onclick = () => fecharDialogo && fecharDialogo(true);
 $('#dialogoNao').onclick = () => fecharDialogo && fecharDialogo(false);
 const aviso = (texto) => perguntar(texto, 'Entendi', null);
 
+/** Pede um texto (ex.: nome do pacote). Devolve o texto ou null se cancelar. */
+async function pedirTexto(texto, valor) {
+  const campo = $('#dialogoCampo');
+  campo.hidden = false;
+  campo.value = valor;
+  const resposta = perguntar(texto, 'Salvar', 'Cancelar');
+  setTimeout(() => { campo.focus(); campo.select(); }, 50);
+  const ok = await resposta;
+  campo.hidden = true;
+  return ok ? campo.value.trim() : null;
+}
+$('#dialogoCampo').onkeydown = (e) => { if (e.key === 'Enter' && fecharDialogo) fecharDialogo(true); };
+
 // Botão "voltar" do Android: devolve true se a página tratou.
 window.voltar = () => {
   if (fecharDialogo) { fecharDialogo(false); return true; }
@@ -752,9 +765,10 @@ function naoPerguntarGaleria() {
 }
 
 function atualizarConvite() {
-  if (!temApp || est.fila) { $('#convite').hidden = true; return; }
+  if (!temApp || est.fila) { $('#convite').hidden = true; $('#btTodosGifs').hidden = true; return; }
   const g = gifsDaGaleria();
   if (!g.permissao) {
+    $('#btTodosGifs').hidden = true;
     $('#convite').hidden = naoPerguntarGaleria();
     $('#conviteTexto').textContent = 'Tem GIFs salvos no celular? O app procura na galeria e transforma em figurinhas, um de cada vez.';
     $('#btConvite').textContent = 'Procurar GIFs na galeria';
@@ -765,8 +779,13 @@ function atualizarConvite() {
     };
     return;
   }
-  const ids = g.gifs || [];
+  const todos = (g.gifs || []).map((x) => x.id);
+  const ids = (g.gifs || []).filter((x) => !x.visto).map((x) => x.id);
   const n = ids.length;
+  // Botão fixo: rever todos os GIFs da galeria, mesmo depois de passar por eles.
+  $('#btTodosGifs').hidden = todos.length === 0;
+  $('#btTodosGifs').textContent = todos.length === 1 ? 'Ver o GIF da galeria' : `Ver os ${todos.length} GIFs da galeria`;
+  $('#btTodosGifs').onclick = () => { est.fila = { ids: todos, pos: 0 }; $('#convite').hidden = true; $('#btTodosGifs').hidden = true; abrirGifDaFila(); };
   $('#convite').hidden = n === 0;
   if (n === 0) return;
   $('#conviteTexto').textContent = n === 1
@@ -812,8 +831,17 @@ function pararFila() {
 function atualizarBarraFila() {
   const f = est.fila;
   $('#barraFila').hidden = !f;
-  if (f) $('#filaTexto').textContent = `GIF ${f.pos + 1} de ${f.ids.length}`;
+  if (!f) return;
+  $('#filaTexto').textContent = `GIF ${f.pos + 1} de ${f.ids.length}`;
+  $('#btAnterior').disabled = f.pos === 0;
 }
+
+$('#btAnterior').onclick = () => {
+  if (!est.fila || est.fila.pos === 0) return;
+  est.fila.pos--;
+  fecharMidia();
+  abrirGifDaFila();
+};
 
 $('#btPular').onclick = () => {
   if (!est.fila) return;
@@ -916,7 +944,10 @@ function carregarColecao() {
     const bloco = el('div', 'pacote');
     const cab = el('div', 'cab-pacote');
     const n = p.figurinhas.length;
-    cab.append(el('h3', '', p.nome), el('span', 'contagem', `${n} de 30${p.noWhatsApp ? ' · no WhatsApp' : ''}`));
+    const renomear = el('button', 'bt discreto', 'Renomear');
+    renomear.type = 'button';
+    renomear.onclick = () => renomearPacote(p);
+    cab.append(el('h3', '', p.nome), renomear, el('span', 'contagem', `${n} de 30${p.noWhatsApp ? ' · no WhatsApp' : ''}`));
     bloco.append(cab);
     const enviar = (rotulo) => {
       const b = el('button', 'bt pequeno', rotulo);
@@ -954,6 +985,16 @@ function carregarColecao() {
     bloco.append(grade);
     cont.append(bloco);
   }
+}
+
+async function renomearPacote(p) {
+  const tipo = p.animado ? 'dos GIFs' : 'das figurinhas';
+  const nome = await pedirTexto(`Novo nome para o pacote ${tipo}:`, p.nomeBase || p.nome);
+  if (!nome || nome === p.nomeBase) return;
+  const erro = window.Android.renomearPacote(p.animado, nome);
+  if (erro) { aviso(erro); return; }
+  carregarColecao();
+  if (p.noWhatsApp) aviso(`Nome trocado. Para o WhatsApp mostrar "${nome}", toque em "Atualizar no WhatsApp".`);
 }
 
 /* ---------- início ---------- */

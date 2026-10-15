@@ -4,7 +4,7 @@ App Android que transforma foto, GIF ou vídeo (da galeria ou de um link) em fig
 
 **Baixar o APK:** https://github.com/JVHubert/figurinhasDoHubert/releases/download/ultima/figurinhas.apk
 
-**Página pública (link curto tinyurl.com/figsHubert):** https://jvhubert.github.io/figurinhasDoHubert/ ([docs/index.html](docs/index.html))
+**Página pública (link curto tinyurl.com/figurinhasDoHubert):** https://jvhubert.github.io/figurinhasDoHubert/ ([docs/index.html](docs/index.html))
 
 ## Como funciona
 

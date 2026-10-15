@@ -206,11 +206,12 @@ try {
     window.Android = {
       versao: () => '1.0.teste', pronto() {}, escolherDaGaleria() {}, baixarLink() {}, cancelarLink() {},
       listar: () => JSON.stringify([
-        { id: 'fotos-1', nome: 'Figurinhas do JV', animado: false, noWhatsApp: true, precisaAtualizar: false,
+        { id: 'fotos-1', nome: 'Figurinhas do Hubert', nomeBase: 'Figurinhas do Hubert', animado: false, noWhatsApp: true, precisaAtualizar: false,
           figurinhas: ['foto', 'foto-cantos', 'foto', 'foto-cantos', 'foto'].map((n, i) => ({ arquivo: 'f' + i, url: '/saida/' + n + '.webp' })) },
-        { id: 'animadas-1', nome: 'Animadas do JV', animado: true, noWhatsApp: true, precisaAtualizar: true,
+        { id: 'animadas-1', nome: 'Gifs do Hubert', nomeBase: 'Gifs do Hubert', animado: true, noWhatsApp: true, precisaAtualizar: true,
           figurinhas: ['video', 'gif'].map((n, i) => ({ arquivo: 'a' + i, url: '/saida/' + n + '.webp' })) } ]),
-      gifsDaGaleria: () => JSON.stringify({ permissao: true, gifs: ['i1', 'i2', 'i3'] }),
+      gifsDaGaleria: () => JSON.stringify({ permissao: true, gifs: [{ id: 'i1', visto: false }, { id: 'i2', visto: false }, { id: 'i3', visto: true }] }),
+      renomearPacote(animado, nome) { window.renomeado = [animado, nome]; return ''; },
       abrirGif() { setTimeout(() => window.aoReceberArquivo({ url: '/amostras/terra.gif', mime: 'image/gif' }), 50); },
       marcarGifsVistos(ids) { window.vistos.push(ids); },
       salvarFigurinha: () => JSON.stringify({ ok: true, pacote: 'animadas-1', nome: 'Animadas do JV', total: 3, temWhatsApp: true }),
@@ -221,15 +222,30 @@ try {
   await avaliar(auxiliares);
   await new Promise((ok) => setTimeout(ok, 800));
   await printPaginaInteira('inicio-app');
+  const botaoTodos = await avaliar(`document.querySelector('#btTodosGifs').hidden ? 'escondido' : document.querySelector('#btTodosGifs').textContent`);
+  // Renomear o pacote de GIFs
+  await avaliar(`document.querySelectorAll('.cab-pacote .bt')[1].click()`);
+  await new Promise((ok) => setTimeout(ok, 200));
+  await print('renomear');
+  await avaliar(`(() => { document.querySelector('#dialogoCampo').value = 'Memes da família'; document.querySelector('#dialogoSim').click(); })()`);
+  await new Promise((ok) => setTimeout(ok, 200));
+  const renomeado = await avaliar('window.renomeado');
+  await avaliar(`document.querySelector('#dialogoSim').click()`);
   await avaliar(`document.querySelector('#btConvite').click()`);
   await new Promise((ok) => setTimeout(ok, 2500));
   await print('fila-editor');
-  const barra = await avaliar(`document.querySelector('#barraFila').hidden ? 'escondida' : document.querySelector('#filaTexto').textContent`);
+  const barra = await avaliar(`document.querySelector('#barraFila').hidden ? 'escondida' : document.querySelector('#filaTexto').textContent + ' / anterior desligado: ' + document.querySelector('#btAnterior').disabled`);
+  await avaliar(`document.querySelector('#btPular').click()`);
+  await new Promise((ok) => setTimeout(ok, 2500));
+  const barra2 = await avaliar(`document.querySelector('#filaTexto').textContent + ' / anterior desligado: ' + document.querySelector('#btAnterior').disabled`);
+  await avaliar(`document.querySelector('#btAnterior').click()`);
+  await new Promise((ok) => setTimeout(ok, 2500));
+  const barra3 = await avaliar(`document.querySelector('#filaTexto').textContent`);
   await avaliar('Fig.gerar()');
   await avaliar(`document.querySelector('#btAdicionar').click()`);
   await new Promise((ok) => setTimeout(ok, 1500));
   await printPaginaInteira('fila-concluido');
-  resultados.push({ nome: 'fila-e-atualizar', barra, vistos: await avaliar('window.vistos'),
+  resultados.push({ nome: 'fila-e-atualizar', botaoTodos, renomeado, barra, barra2, barra3, vistos: await avaliar('window.vistos'),
     proximo: await avaliar(`document.querySelector('#btProximo').hidden ? 'escondido' : document.querySelector('#btProximo').textContent`),
     telaFinal: await avaliar(`document.querySelector('#feitoTexto').textContent`) });
 } catch (e) {
