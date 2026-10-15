@@ -7,8 +7,8 @@ import java.io.ByteArrayOutputStream
 /** Assinatura do Hubert (JV) nos pacotes e dentro de cada figurinha (quem recebe vê ao tocar nela). */
 object Creditos {
     const val AUTOR = "Hubert"
-    const val LINK_CURTO = "tinyurl.com/figsjv"
-    const val SITE = "https://jvhubert.github.io/figurinhas/"
+    const val LINK_CURTO = "tinyurl.com/figsHubert"
+    const val SITE = "https://jvhubert.github.io/figurinhasDoHubert/"
     const val PUBLICADOR = "$AUTOR · faça as suas: $LINK_CURTO"
 
     fun nomeDoPacote(animado: Boolean, n: Int) =

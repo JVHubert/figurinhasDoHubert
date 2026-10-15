@@ -1,7 +1,7 @@
 name: APK
 
 # A cada push na main: compila o APK assinado e publica no release "ultima".
-# Link fixo para baixar: https://github.com/JVHubert/figurinhas/releases/download/ultima/figurinhas.apk
+# Link fixo para baixar: https://github.com/JVHubert/figurinhasDoHubert/releases/download/ultima/figurinhas.apk
 on:
   push:
     branches: [main]

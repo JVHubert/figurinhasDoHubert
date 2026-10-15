@@ -2,9 +2,9 @@
 
 App Android que transforma foto, GIF ou vídeo (da galeria ou de um link) em figurinha de WhatsApp, **sem borda branca**, com recorte e prévia.
 
-**Baixar o APK:** https://github.com/JVHubert/figurinhas/releases/download/ultima/figurinhas.apk
+**Baixar o APK:** https://github.com/JVHubert/figurinhasDoHubert/releases/download/ultima/figurinhas.apk
 
-**Página pública (link curto tinyurl.com/figsjv):** https://jvhubert.github.io/figurinhas/ ([docs/index.html](docs/index.html))
+**Página pública (link curto tinyurl.com/figsHubert):** https://jvhubert.github.io/figurinhasDoHubert/ ([docs/index.html](docs/index.html))
 
 ## Como funciona
 
