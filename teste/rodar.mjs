@@ -194,10 +194,15 @@ try {
   // "Começa em" num GIF curto: o começo precisa andar mesmo com a duração no máximo.
   if (existsSync(join(amostras, 'terra.gif'))) {
     await avaliar(`(async () => { Fig.mostrar('inicio'); await Fig.abrirBlob(await (await fetch('/amostras/terra.gif')).blob()); })()`);
-    resultados.push({ nome: 'comeca-em', ...await avaliar(`(() => { const i = document.querySelector('#inicio');
-      const antes = { max: i.max, dur: Fig.est.dur, total: Fig.est.midia.duracao };
-      i.value = 3; i.dispatchEvent(new Event('input'));
-      return { antes, depois: { inicio: Fig.est.inicio, dur: Fig.est.dur, txt: document.querySelector('#txtInicio').textContent + ' / ' + document.querySelector('#txtDur').textContent } }; })()`) });
+    // Arrasta o controle de verdade (mouse), como o dedo faria, de 0 até 80% da largura.
+    const antes = await avaliar(`(() => { const i = document.querySelector('#comeco'); i.scrollIntoView({ block: 'center' });
+      const r = i.getBoundingClientRect(); return { max: i.max, dur: Fig.est.dur, total: Fig.est.midia.duracao, x: r.left, y: r.top + r.height / 2, w: r.width }; })()`);
+    const mouse = (type, x) => cdp('Input.dispatchMouseEvent', { type, x, y: antes.y, button: 'left', buttons: type === 'mouseReleased' ? 0 : 1, clickCount: 1 });
+    await mouse('mousePressed', antes.x + 8);
+    for (let k = 1; k <= 10; k++) await mouse('mouseMoved', antes.x + 8 + (antes.w * 0.8 - 8) * k / 10);
+    await mouse('mouseReleased', antes.x + antes.w * 0.8);
+    resultados.push({ nome: 'comeca-em', antes, depois: await avaliar(`({ inicio: Fig.est.inicio, dur: Fig.est.dur,
+      txt: document.querySelector('#txtInicio').textContent + ' / ' + document.querySelector('#txtDur').textContent })`) });
   }
 
   // Tela inicial com coleção, convite de GIFs e fluxo "Adicionar/Atualizar" com um Android de mentira.

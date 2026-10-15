@@ -301,8 +301,8 @@ function prepararEditor() {
     d.max = maxDur.toFixed(1);
     d.value = est.dur;
     // O começo pode ir até quase o fim; se passar, a duração encolhe sozinha.
-    $('#inicio').max = Math.max(0, m.duracao - minDur).toFixed(1);
-    $('#inicio').value = 0;
+    $('#comeco').max = Math.max(0, m.duracao - minDur).toFixed(1);
+    $('#comeco').value = 0;
     if (m.tipo === 'video') m.el.currentTime = 0;
   }
   est.t0 = performance.now();
@@ -322,7 +322,7 @@ $('#zoom').oninput = (e) => {
   definirZoom(Math.exp(a + (b - a) * e.target.value / 1000));
   desmarcarModo();
 };
-$('#inicio').oninput = (e) => {
+$('#comeco').oninput = (e) => {
   est.inicio = +e.target.value;
   const resta = Math.floor((est.midia.duracao - est.inicio) * 10) / 10;
   if (est.dur > resta) { est.dur = Math.max(+$('#duracao').min, resta); $('#duracao').value = est.dur; }
@@ -335,7 +335,7 @@ $('#duracao').oninput = (e) => {
   const max = Math.max(0, Math.floor((est.midia.duracao - est.dur) * 10) / 10);
   if (est.inicio > max) {
     est.inicio = max;
-    $('#inicio').value = max;
+    $('#comeco').value = max;
     if (est.midia.tipo === 'video') est.midia.el.currentTime = est.inicio;
   }
   est.t0 = performance.now();
