@@ -114,7 +114,10 @@ class MainActivity : ComponentActivity() {
 
         tratarIntent(intent)
         baixador.preparar()
-        tarefas.execute { Pacotes.assinarAntigas(applicationContext) }
+        tarefas.execute {
+            if (Pacotes.instalarBrinde(applicationContext)) chamarJs("aoBrindeInstalado")
+            Pacotes.assinarAntigas(applicationContext)
+        }
     }
 
     override fun onNewIntent(intent: Intent) {

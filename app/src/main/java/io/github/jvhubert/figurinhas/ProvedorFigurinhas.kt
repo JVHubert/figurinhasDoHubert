@@ -57,8 +57,11 @@ class ProvedorFigurinhas : ContentProvider() {
     private fun cursorFigurinhas(p: Pacotes.Pacote?) = MatrixCursor(
         arrayOf("sticker_file_name", "sticker_emoji", "sticker_accessibility_text")
     ).apply {
-        // O WhatsApp exige pelo menos 1 emoji por figurinha.
-        p?.listaParaWhatsApp()?.forEach { addRow(arrayOf<Any?>(it, p.emoji, null)) }
+        // O WhatsApp exige pelo menos 1 emoji por figurinha. As do brinde têm emoji e texto próprios.
+        p?.listaParaWhatsApp()?.forEach {
+            val info = p.info[Pacotes.arquivoReal(it)]
+            addRow(arrayOf<Any?>(it, info?.first ?: p.emoji, info?.second))
+        }
     }
 
     override fun openAssetFile(uri: Uri, mode: String): AssetFileDescriptor? {

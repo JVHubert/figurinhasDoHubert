@@ -23,6 +23,7 @@ App Android que transforma foto, GIF ou vídeo (da galeria ou de um link) em fig
     2. [yt-dlp](https://github.com/yt-dlp/yt-dlp), pelo [youtubedl-android](https://github.com/yausername/youtubedl-android), que se atualiza sozinho a cada 3 dias;
     3. a imagem ou o vídeo de capa da página (`og:image` / `og:video`).
   - [MainActivity.kt](app/src/main/java/io/github/jvhubert/figurinhas/MainActivity.kt): cuida da galeria, do menu "Compartilhar" e do botão "Adicionar ao WhatsApp".
+- Brinde: o app já vem com 2 pacotes do Pica-Pau ([app/src/main/assets/brinde](app/src/main/assets/brinde)). Eles são instalados uma vez, na primeira abertura, e têm nome fixo, emoji e texto de acessibilidade por figurinha. As figurinhas foram geradas no PC com o próprio editor do app.
 
 ## Compilar
 
@@ -39,3 +40,5 @@ O script abre o editor no Chrome sem janela e gera figurinhas de foto, vídeo e 
 ## Licença
 
 Open source, sob a [GPL-3.0](LICENSE). A licença acompanha a do [youtubedl-android](https://github.com/yausername/youtubedl-android), que vai junto no APK.
+
+A licença vale para o código. As figurinhas do brinde (`assets/brinde`) são do Pica-Pau, personagem de Walter Lantz / Universal; elas não são cobertas pela GPL.

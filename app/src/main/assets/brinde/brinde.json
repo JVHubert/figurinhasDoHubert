@@ -1,0 +1,299 @@
+{
+ "versao": 1,
+ "pacotes": [
+  {
+   "id": "picapau-1",
+   "nome": "Pica Pau 1",
+   "figurinhas": [
+    {
+     "arquivo": "01.webp",
+     "emoji": "😠",
+     "texto": "Arrancando os cabelos",
+     "origem": "picapau-05-cabelos.gif"
+    },
+    {
+     "arquivo": "02.webp",
+     "emoji": "😠",
+     "texto": "Não gostei",
+     "origem": "picapau-08-bravo.gif"
+    },
+    {
+     "arquivo": "03.webp",
+     "emoji": "😠",
+     "texto": "Hmpf",
+     "origem": "picapau-09-ofendido.gif"
+    },
+    {
+     "arquivo": "04.webp",
+     "emoji": "😠",
+     "texto": "Gritando no telefone",
+     "origem": "picapau-16-telefone.gif"
+    },
+    {
+     "arquivo": "05.webp",
+     "emoji": "😠",
+     "texto": "Fui tapeado!",
+     "origem": "picapau-70-tapeado.gif"
+    },
+    {
+     "arquivo": "06.webp",
+     "emoji": "😱",
+     "texto": "Olhos saltando",
+     "origem": "picapau-06-olhos.gif"
+    },
+    {
+     "arquivo": "07.webp",
+     "emoji": "😱",
+     "texto": "Vendo estrelas",
+     "origem": "picapau-21-tonto.gif"
+    },
+    {
+     "arquivo": "08.webp",
+     "emoji": "😱",
+     "texto": "Sei lá",
+     "origem": "picapau-23-seila.gif"
+    },
+    {
+     "arquivo": "09.webp",
+     "emoji": "😱",
+     "texto": "Levei uma",
+     "origem": "picapau-44-coco.gif"
+    },
+    {
+     "arquivo": "10.webp",
+     "emoji": "😱",
+     "texto": "E agora?",
+     "origem": "picapau-51-desespero.gif"
+    },
+    {
+     "arquivo": "11.webp",
+     "emoji": "😏",
+     "texto": "Fazer o quê?",
+     "origem": "picapau-02-fazeroque.gif"
+    },
+    {
+     "arquivo": "12.webp",
+     "emoji": "😏",
+     "texto": "Não cinico",
+     "origem": "picapau-03-cinico.gif"
+    },
+    {
+     "arquivo": "13.webp",
+     "emoji": "😏",
+     "texto": "Tramando",
+     "origem": "picapau-07-planejando.gif"
+    },
+    {
+     "arquivo": "14.webp",
+     "emoji": "😏",
+     "texto": "Foi ele!",
+     "origem": "picapau-12-foiele.gif"
+    },
+    {
+     "arquivo": "15.webp",
+     "emoji": "😏",
+     "texto": "Só olhando",
+     "origem": "picapau-13-espiando.gif"
+    },
+    {
+     "arquivo": "16.webp",
+     "emoji": "😏",
+     "texto": "porrada",
+     "origem": "picapau-18-gargalhada.gif"
+    },
+    {
+     "arquivo": "17.webp",
+     "emoji": "😏",
+     "texto": "nadando no dinheiro",
+     "origem": "picapau-19-apontando.gif"
+    },
+    {
+     "arquivo": "18.webp",
+     "emoji": "😏",
+     "texto": "Eu avisei",
+     "origem": "picapau-22-convencido.gif"
+    },
+    {
+     "arquivo": "19.webp",
+     "emoji": "😏",
+     "texto": "Sorrisinho",
+     "origem": "picapau-24-sorrisinho.gif"
+    },
+    {
+     "arquivo": "20.webp",
+     "emoji": "😏",
+     "texto": "Sorriso amarelo",
+     "origem": "picapau-25-amarelo.gif"
+    },
+    {
+     "arquivo": "21.webp",
+     "emoji": "😏",
+     "texto": "Língua de fora",
+     "origem": "picapau-26-lingua.gif"
+    },
+    {
+     "arquivo": "22.webp",
+     "emoji": "😏",
+     "texto": "Drama",
+     "origem": "picapau-34-piano.gif"
+    },
+    {
+     "arquivo": "23.webp",
+     "emoji": "😏",
+     "texto": "Risada de vilão",
+     "origem": "picapau-45-vilao.gif"
+    },
+    {
+     "arquivo": "24.webp",
+     "emoji": "😏",
+     "texto": "Assina aqui",
+     "origem": "picapau-49-assina.gif"
+    },
+    {
+     "arquivo": "25.webp",
+     "emoji": "😏",
+     "texto": "Medo",
+     "origem": "picapau-53-bravo.gif"
+    },
+    {
+     "arquivo": "26.webp",
+     "emoji": "😏",
+     "texto": "Chorando",
+     "origem": "picapau-54-chorando.gif"
+    },
+    {
+     "arquivo": "27.webp",
+     "emoji": "😏",
+     "texto": "Essa gente inventa cada coisa",
+     "origem": "picapau-71-inventa.gif"
+    }
+   ]
+  },
+  {
+   "id": "picapau-2",
+   "nome": "Pica Pau 2",
+   "figurinhas": [
+    {
+     "arquivo": "01.webp",
+     "emoji": "😂",
+     "texto": "Piscadinha",
+     "origem": "picapau-11-risadinha.gif"
+    },
+    {
+     "arquivo": "02.webp",
+     "emoji": "😂",
+     "texto": "Férias",
+     "origem": "picapau-41-ferias.gif"
+    },
+    {
+     "arquivo": "03.webp",
+     "emoji": "😂",
+     "texto": "Risada Zeca Urubu",
+     "origem": "picapau-50-oculos.gif"
+    },
+    {
+     "arquivo": "04.webp",
+     "emoji": "😂",
+     "texto": "Kakakaka",
+     "origem": "picapau-62-kakaka.gif"
+    },
+    {
+     "arquivo": "05.webp",
+     "emoji": "😴",
+     "texto": "Despertador",
+     "origem": "picapau-36-corneta.gif"
+    },
+    {
+     "arquivo": "06.webp",
+     "emoji": "😴",
+     "texto": "Soninho",
+     "origem": "picapau-38-travesseiro.gif"
+    },
+    {
+     "arquivo": "07.webp",
+     "emoji": "😴",
+     "texto": "Fui",
+     "origem": "picapau-43-fui.gif"
+    },
+    {
+     "arquivo": "08.webp",
+     "emoji": "🎉",
+     "texto": "galãzinho",
+     "origem": "picapau-31-festa.gif"
+    },
+    {
+     "arquivo": "09.webp",
+     "emoji": "🎉",
+     "texto": "comemoração",
+     "origem": "picapau-32-dancinha.gif"
+    },
+    {
+     "arquivo": "10.webp",
+     "emoji": "🎉",
+     "texto": "Feliz",
+     "origem": "picapau-33-dancaantiga.gif"
+    },
+    {
+     "arquivo": "11.webp",
+     "emoji": "❤️",
+     "texto": "Galã",
+     "origem": "picapau-04-gala.gif"
+    },
+    {
+     "arquivo": "12.webp",
+     "emoji": "❤️",
+     "texto": "Por favor",
+     "origem": "picapau-29-porfavor.gif"
+    },
+    {
+     "arquivo": "13.webp",
+     "emoji": "❤️",
+     "texto": "Apaixonado",
+     "origem": "picapau-57-apaixonado.gif"
+    },
+    {
+     "arquivo": "14.webp",
+     "emoji": "❤️",
+     "texto": "Obrigado, amigo",
+     "origem": "picapau-69-amigo.gif"
+    },
+    {
+     "arquivo": "15.webp",
+     "emoji": "😩",
+     "texto": "Derretendo",
+     "origem": "picapau-28-derretendo.gif"
+    },
+    {
+     "arquivo": "16.webp",
+     "emoji": "😩",
+     "texto": "Calor",
+     "origem": "picapau-35-ressaca.gif"
+    },
+    {
+     "arquivo": "17.webp",
+     "emoji": "💰",
+     "texto": "Cheiro de dinheiro",
+     "origem": "picapau-14-dinheiro.gif"
+    },
+    {
+     "arquivo": "18.webp",
+     "emoji": "🍰",
+     "texto": "mucei muito",
+     "origem": "picapau-20-morrendo.gif"
+    },
+    {
+     "arquivo": "19.webp",
+     "emoji": "🍰",
+     "texto": "Lanchinho",
+     "origem": "picapau-39-lanchinho.gif"
+    },
+    {
+     "arquivo": "20.webp",
+     "emoji": "🍰",
+     "texto": "mmm bolo de murango",
+     "origem": "picapau-40-bolo.gif"
+    }
+   ]
+  }
+ ]
+}

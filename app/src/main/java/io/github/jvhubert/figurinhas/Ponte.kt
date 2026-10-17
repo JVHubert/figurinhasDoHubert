@@ -49,6 +49,7 @@ class Ponte(private val a: MainActivity) {
             p.figurinhas.forEach { figs.put(JSONObject().put("arquivo", it).put("url", "/figurinhas/${p.id}/$it")) }
             lista.put(
                 JSONObject().put("id", p.id).put("nome", p.nome).put("nomeBase", p.nomeBase).put("animado", p.animado)
+                    .put("brinde", p.brinde)
                     .put("figurinhas", figs).put("noWhatsApp", WhatsApp.adicionado(a, p.id))
                     .put("precisaAtualizar", p.precisaAtualizar)
             )

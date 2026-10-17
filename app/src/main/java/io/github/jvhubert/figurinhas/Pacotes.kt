@@ -26,8 +26,14 @@ object Pacotes {
         /** Última versão que o WhatsApp confirmou ter recebido (0 = nunca). */
         var versaoNoWhatsApp: Long,
         val figurinhas: MutableList<String>,
+        /** Pacote de brinde: nome fixo (não segue o "Renomear") e não recebe figurinhas novas. */
+        val nomeFixo: String? = null,
+        /** Brinde: emoji e texto de acessibilidade de cada figurinha (arquivo -> emoji, texto). */
+        val info: MutableMap<String, Pair<String, String>> = mutableMapOf(),
     ) {
-        val nome get() = nomeBase + (id.substringAfterLast('-').toIntOrNull()?.takeIf { it > 1 }?.let { " $it" } ?: "")
+        val nome get() = nomeFixo
+            ?: (nomeBase + (id.substringAfterLast('-').toIntOrNull()?.takeIf { it > 1 }?.let { " $it" } ?: ""))
+        val brinde get() = nomeFixo != null
         val emoji get() = if (animado) "😂" else "🙂"
         val precisaAtualizar get() = versao != versaoNoWhatsApp
 
@@ -67,9 +73,14 @@ object Pacotes {
             val o = arr.getJSONObject(i)
             val figs = o.getJSONArray("figurinhas")
             val animado = o.getBoolean("animado")
+            val info = mutableMapOf<String, Pair<String, String>>()
+            o.optJSONObject("info")?.let { inf ->
+                inf.keys().forEach { k -> inf.getJSONObject(k).let { info[k] = it.getString("emoji") to it.getString("texto") } }
+            }
             Pacote(
                 o.getString("id"), animado, nomes.getValue(animado), o.getLong("versao"),
                 o.optLong("versaoNoWhatsApp", 0), MutableList(figs.length()) { figs.getString(it) },
+                o.optString("nomeFixo").ifEmpty { null }, info,
             )
         }
     }
@@ -77,10 +88,15 @@ object Pacotes {
     private fun gravar(ctx: Context, lista: List<Pacote>) {
         val arr = JSONArray()
         lista.forEach { p ->
-            arr.put(
-                JSONObject().put("id", p.id).put("animado", p.animado).put("versao", p.versao)
-                    .put("versaoNoWhatsApp", p.versaoNoWhatsApp).put("figurinhas", JSONArray(p.figurinhas))
-            )
+            val o = JSONObject().put("id", p.id).put("animado", p.animado).put("versao", p.versao)
+                .put("versaoNoWhatsApp", p.versaoNoWhatsApp).put("figurinhas", JSONArray(p.figurinhas))
+            if (p.nomeFixo != null) o.put("nomeFixo", p.nomeFixo)
+            if (p.info.isNotEmpty()) {
+                val inf = JSONObject()
+                p.info.forEach { (k, v) -> inf.put(k, JSONObject().put("emoji", v.first).put("texto", v.second)) }
+                o.put("info", inf)
+            }
+            arr.put(o)
         }
         val tmp = File(pasta(ctx), "pacotes.json.tmp")
         tmp.writeText(JSONObject().put("pacotes", arr).toString())
@@ -89,7 +105,7 @@ object Pacotes {
 
     fun adicionar(ctx: Context, webp: ByteArray, bandeja: ByteArray, animado: Boolean): Pacote = synchronized(trava) {
         val lista = lerSemTrava(ctx)
-        val p = lista.lastOrNull { it.animado == animado && it.figurinhas.size < MAX_POR_PACOTE }
+        val p = lista.lastOrNull { it.animado == animado && !it.brinde && it.figurinhas.size < MAX_POR_PACOTE }
             ?: novoPacote(ctx, lista, animado).also { lista.add(it) }
         val base = "f${System.currentTimeMillis()}"
         val dir = File(pasta(ctx), p.id).apply { mkdirs() }
@@ -110,10 +126,57 @@ object Pacotes {
         return Pacote("$prefixo-$n", animado, nomeBase(ctx, animado), System.currentTimeMillis(), 0, mutableListOf())
     }
 
+    /**
+     * Pacotes de brinde que vêm dentro do app (assets/brinde, gerados no PC por ferramentas/gerar-brinde.mjs).
+     * Instala uma vez por versão do brinde: se a pessoa apagar um pacote, ele não volta.
+     * true se instalou algo (a tela precisa recarregar a coleção).
+     */
+    fun instalarBrinde(ctx: Context): Boolean = synchronized(trava) {
+        val prefs = ctx.getSharedPreferences("brinde", Context.MODE_PRIVATE)
+        val indiceBrinde = try {
+            JSONObject(ctx.assets.open("brinde/brinde.json").bufferedReader().use { it.readText() })
+        } catch (_: Exception) {
+            return@synchronized false
+        }
+        val versaoBrinde = indiceBrinde.getInt("versao")
+        if (prefs.getInt("versao", 0) >= versaoBrinde) return@synchronized false
+
+        val lista = lerSemTrava(ctx)
+        var instalou = false
+        val arr = indiceBrinde.getJSONArray("pacotes")
+        for (i in 0 until arr.length()) {
+            val o = arr.getJSONObject(i)
+            val id = o.getString("id")
+            if (lista.any { it.id == id } || lista.size >= MAX_PACOTES) continue
+            val p = Pacote(id, true, nomeBase(ctx, true), System.currentTimeMillis(), 0, mutableListOf(), o.getString("nome"))
+            val dir = File(pasta(ctx), id).apply { mkdirs() }
+            val figs = o.getJSONArray("figurinhas")
+            for (k in 0 until figs.length()) {
+                val f = figs.getJSONObject(k)
+                val arquivo = f.getString("arquivo")
+                val miniatura = arquivo.removeSuffix(".webp") + ".png"
+                val webp = ctx.assets.open("brinde/$id/$arquivo").use { it.readBytes() }
+                File(dir, arquivo).writeBytes(Creditos.comExif(webp, p.id, p.nome, p.emoji))
+                ctx.assets.open("brinde/$id/$miniatura").use { ent -> File(dir, miniatura).outputStream().use { ent.copyTo(it) } }
+                p.figurinhas.add(arquivo)
+                p.info[arquivo] = f.getString("emoji") to f.getString("texto")
+            }
+            lista.add(p)
+            instalou = true
+        }
+        if (instalou) {
+            gravar(ctx, lista)
+            avisarWhatsApp(ctx)
+        }
+        prefs.edit().putInt("versao", versaoBrinde).commit()
+        instalou
+    }
+
     fun apagar(ctx: Context, id: String, arquivo: String) = synchronized(trava) {
         val lista = lerSemTrava(ctx)
         val p = lista.firstOrNull { it.id == id } ?: return@synchronized
         if (!p.figurinhas.remove(arquivo)) return@synchronized
+        p.info.remove(arquivo)
         val dir = File(pasta(ctx), p.id)
         File(dir, arquivo).delete()
         File(dir, arquivo.removeSuffix(".webp") + ".png").delete()

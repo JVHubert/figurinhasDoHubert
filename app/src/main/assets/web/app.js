@@ -944,10 +944,16 @@ function carregarColecao() {
     const bloco = el('div', 'pacote');
     const cab = el('div', 'cab-pacote');
     const n = p.figurinhas.length;
-    const renomear = el('button', 'bt discreto', 'Renomear');
-    renomear.type = 'button';
-    renomear.onclick = () => renomearPacote(p);
-    cab.append(el('h3', '', p.nome), renomear, el('span', 'contagem', `${n} de 30${p.noWhatsApp ? ' · no WhatsApp' : ''}`));
+    cab.append(el('h3', '', p.nome));
+    if (p.brinde) {
+      cab.append(el('span', 'contagem', 'Brinde'));
+    } else {
+      const renomear = el('button', 'bt discreto', 'Renomear');
+      renomear.type = 'button';
+      renomear.onclick = () => renomearPacote(p);
+      cab.append(renomear);
+    }
+    cab.append(el('span', 'contagem', `${n} de 30${p.noWhatsApp ? ' · no WhatsApp' : ''}`));
     bloco.append(cab);
     const enviar = (rotulo) => {
       const b = el('button', 'bt pequeno', rotulo);
@@ -986,6 +992,9 @@ function carregarColecao() {
     cont.append(bloco);
   }
 }
+
+// O Android instalou os pacotes de brinde depois que a tela abriu: mostra eles.
+window.aoBrindeInstalado = () => carregarColecao();
 
 async function renomearPacote(p) {
   const tipo = p.animado ? 'dos GIFs' : 'das figurinhas';
