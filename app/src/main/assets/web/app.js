@@ -128,6 +128,7 @@ async function detectarTipo(blob, mime = '') {
 
 async function abrirBlob(blob, mime) {
   ocupado('Abrindo…', 0);
+  est.fundoOriginal = null;
   try {
     fecharMidia();
     const tipo = await detectarTipo(blob, mime || blob.type || '');
@@ -307,7 +308,57 @@ function prepararEditor() {
   }
   est.t0 = performance.now();
   atualizarTrecho();
+  atualizarBotaoFundo();
 }
+
+/* ---------- remover fundo (só fotos; o recorte é feito pelo Android, com o ML Kit) ---------- */
+
+function atualizarBotaoFundo() {
+  const b = $('#btFundo');
+  b.hidden = !(temApp && window.Android.removerFundo && est.midia && est.midia.tipo === 'imagem');
+  b.textContent = est.fundoOriginal ? 'Voltar o fundo' : 'Remover fundo';
+}
+
+$('#btFundo').onclick = async () => {
+  if (est.fundoOriginal) {
+    const original = est.fundoOriginal;
+    await abrirBlob(original, original.type);
+    return;
+  }
+  const m = est.midia;
+  if (!m || m.tipo !== 'imagem') return;
+  ocupado('Removendo o fundo…', 0.4);
+  try {
+    const original = await (await fetch(m.url)).blob();
+    // Foto reduzida (o recorte fica bom e rápido assim) e já virada do jeito certo.
+    const k = Math.min(1, 1280 / Math.max(m.w, m.h));
+    const c = document.createElement('canvas');
+    c.width = Math.round(m.w * k);
+    c.height = Math.round(m.h * k);
+    c.getContext('2d').drawImage(m.el, 0, 0, c.width, c.height);
+    const png = await paraBase64(await new Promise((ok) => c.toBlob(ok, 'image/png')));
+    const r = await new Promise((ok) => {
+      const limite = setTimeout(() => ok({ ok: false, erro: 'O recorte demorou demais. Tente de novo.' }), 60000);
+      window.aoRemoverFundo = (res) => { clearTimeout(limite); ok(res); };
+      window.Android.removerFundo(png);
+    });
+    window.aoRemoverFundo = null;
+    if (!r.ok) {
+      ocupado(null);
+      await aviso(r.erro);
+      return;
+    }
+    const bytes = Uint8Array.from(atob(r.png), (ch) => ch.charCodeAt(0));
+    if (await abrirBlob(new Blob([bytes], { type: 'image/png' }), 'image/png')) {
+      est.fundoOriginal = original;
+      atualizarBotaoFundo();
+    }
+  } catch (e) {
+    console.error(e);
+    ocupado(null);
+    await aviso('Não consegui remover o fundo.\n' + (e.message || ''));
+  }
+};
 
 function atualizarTrecho() {
   $('#txtInicio').textContent = segundos(est.inicio);

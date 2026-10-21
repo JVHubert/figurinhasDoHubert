@@ -14,7 +14,8 @@ const saida = join(aqui, 'saida');
 const amostras = process.argv[2] || join(aqui, 'amostras');
 const CHROME = ['C:/Program Files/Google/Chrome/Application/chrome.exe',
   'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'].find(existsSync);
-const PORTA = 8765, DEPURACAO = 9333;
+// PORTA=8790 node teste/rodar.mjs ... se a 8765 estiver ocupada por outro programa.
+const PORTA = +(process.env.PORTA || 8765), DEPURACAO = 9333;
 const TIPOS = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.gif': 'image/gif',
   '.webp': 'image/webp', '.png': 'image/png' };
 

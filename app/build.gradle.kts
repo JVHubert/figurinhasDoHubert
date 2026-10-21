@@ -63,4 +63,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.webkit:webkit:1.12.1")
     implementation("io.github.junkfood02.youtubedl-android:library:0.18.1")
+    // Remover fundo de foto (roda no celular; o modelo vem pelo Google Play Services).
+    implementation("com.google.android.gms:play-services-mlkit-subject-segmentation:16.0.0-beta1")
+    implementation("com.google.android.gms:play-services-base:18.5.0")
 }

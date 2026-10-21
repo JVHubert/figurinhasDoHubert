@@ -115,6 +115,7 @@ class MainActivity : ComponentActivity() {
         tratarIntent(intent)
         baixador.preparar()
         tarefas.execute {
+            Recorte.preparar(applicationContext)
             if (Pacotes.instalarBrinde(applicationContext)) chamarJs("aoBrindeInstalado")
             Pacotes.assinarAntigas(applicationContext)
         }
@@ -183,6 +184,26 @@ class MainActivity : ComponentActivity() {
         val uri = Galeria.uriDe(id)
         if (uri != null) receberArquivo(uri)
         else chamarJs("aoErro", JSONObject.quote("Não achei esse GIF."))
+    }
+
+    /** A tela manda a foto em PNG (base64); a resposta volta em window.aoRemoverFundo({ok, png | erro}). */
+    fun removerFundo(base64: String) {
+        val foto = try {
+            android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
+        } catch (_: Exception) {
+            null
+        }
+        if (foto == null) {
+            chamarJs("aoRemoverFundo", JSONObject().put("ok", false).put("erro", "Não consegui ler a foto.").toString())
+            return
+        }
+        Recorte.remover(applicationContext, foto) { r ->
+            val resposta = r.fold(
+                { JSONObject().put("ok", true).put("png", android.util.Base64.encodeToString(it, android.util.Base64.NO_WRAP)) },
+                { JSONObject().put("ok", false).put("erro", it.message ?: "Não consegui remover o fundo.") },
+            )
+            chamarJs("aoRemoverFundo", resposta.toString())
+        }
     }
 
     fun abrirWhatsApp(p: Pacotes.Pacote) = runOnUiThread {

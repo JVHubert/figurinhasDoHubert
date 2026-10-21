@@ -36,6 +36,10 @@ class Ponte(private val a: MainActivity) {
         JSONObject().put("ok", false).put("erro", e.message ?: "Não consegui salvar a figurinha.").toString()
     }
 
+    /** Foto em PNG (base64). Responde depois, em window.aoRemoverFundo. */
+    @JavascriptInterface
+    fun removerFundo(png: String) = a.removerFundo(png)
+
     @JavascriptInterface
     fun adicionarAoWhatsApp(id: String) {
         Pacotes.ler(a).firstOrNull { it.id == id }?.let { a.abrirWhatsApp(it) }

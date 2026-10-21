@@ -23,6 +23,7 @@ App Android que transforma foto, GIF ou vídeo (da galeria ou de um link) em fig
     2. [yt-dlp](https://github.com/yt-dlp/yt-dlp), pelo [youtubedl-android](https://github.com/yausername/youtubedl-android), que se atualiza sozinho a cada 3 dias;
     3. a imagem ou o vídeo de capa da página (`og:image` / `og:video`).
   - [MainActivity.kt](app/src/main/java/io/github/jvhubert/figurinhas/MainActivity.kt): cuida da galeria, do menu "Compartilhar" e do botão "Adicionar ao WhatsApp".
+  - [Recorte.kt](app/src/main/java/io/github/jvhubert/figurinhas/Recorte.kt): o botão "Remover fundo" das fotos, com o [ML Kit Subject Segmentation](https://developers.google.com/ml-kit/vision/subject-segmentation) do Google. Roda no celular; o modelo vem pelo Google Play Services.
 - Brinde: o app já vem com 2 pacotes do Pica-Pau ([app/src/main/assets/brinde](app/src/main/assets/brinde)). Eles são instalados uma vez, na primeira abertura, e têm nome fixo, emoji e texto de acessibilidade por figurinha. As figurinhas foram geradas no PC com o próprio editor do app.
 
 ## Compilar
