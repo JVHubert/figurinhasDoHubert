@@ -9,7 +9,8 @@ object Creditos {
     const val AUTOR = "Hubert"
     const val LINK_CURTO = "tinyurl.com/figurinhasDoHubert"
     const val SITE = "https://jvhubert.github.io/figurinhasDoHubert/"
-    const val PUBLICADOR = "$AUTOR · faça as suas: $LINK_CURTO"
+    // O WhatsApp mostra "<nome do pacote> • <publicador>"; o nome já leva "Hubert", então aqui só o convite.
+    const val PUBLICADOR = "Faça as suas: $LINK_CURTO"
 
     /** Nome dos pacotes enquanto a pessoa não escolhe outro (dá para renomear no app). */
     fun nomePadrao(animado: Boolean) = if (animado) "Gifs do $AUTOR" else "Figurinhas do $AUTOR"
